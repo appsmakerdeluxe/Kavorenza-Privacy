@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Kavorenza ? Du bist eingeladen!</title>
+  <style>
+    :root {
+      --ink: #090a1a;
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --card-border: rgba(255, 255, 255, 0.14);
+      --text: #f8f8ff;
+      --muted: #b8b8d8;
+      --violet: #8b5cf6;
+      --cyan: #06b6d4;
+      --pink: #f43f5e;
+      --mint: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at 85% 10%, #38206d 0, transparent 28rem),
+                  radial-gradient(circle at 10% 75%, #063d4a 0, transparent 32rem),
+                  var(--ink);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+    .container {
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(6, 182, 212, 0.18);
+      color: var(--cyan);
+      font-weight: 800;
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      margin-bottom: 16px;
+      border: 1px solid rgba(6, 182, 212, 0.35);
+    }
+    h1 {
+      font-size: clamp(1.8rem, 6vw, 2.4rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    p.sub {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 28px;
+      padding: 28px 22px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+      margin-bottom: 22px;
+    }
+    .code-label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .code-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 2px solid var(--violet);
+      border-radius: 18px;
+      padding: 14px 18px;
+      margin: 0 auto 18px;
+      max-width: 320px;
+    }
+    .code-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 0.22em;
+      color: #ffffff;
+      text-shadow: 0 0 16px rgba(139, 92, 246, 0.6);
+    }
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.22);
+    }
+    .copy-btn.copied {
+      background: var(--mint);
+      border-color: var(--mint);
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px 20px;
+      border-radius: 20px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+      margin-bottom: 12px;
+    }
+    .btn:active {
+      transform: scale(0.98);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan) 0%, #0284c7 100%);
+      color: #090a1a;
+      box-shadow: 0 8px 24px rgba(6, 182, 212, 0.4);
+    }
+    .btn-playstore {
+      background: linear-gradient(135deg, var(--pink) 0%, #e11d48 100%);
+      color: #ffffff;
+      box-shadow: 0 8px 24px rgba(244, 63, 94, 0.35);
+    }
+    .steps {
+      text-align: left;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .step-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: var(--muted);
+      font-size: 0.94rem;
+      line-height: 1.45;
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.3);
+      color: var(--violet);
+      border: 1px solid var(--violet);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.82rem;
+    }
+    .lang-toggle {
+      display: inline-flex;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 3px;
+      margin-bottom: 20px;
+    }
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 9px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .lang-btn.active {
+      background: var(--violet);
+      color: #ffffff;
+    }
+    footer {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 12px;
+    }
+    footer a { color: var(--cyan); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="lang-toggle">
+      <button class="lang-btn" id="btnDe" onclick="setLang('de')">DE</button>
+      <button class="lang-btn" id="btnEn" onclick="setLang('en')">EN</button>
+    </div>
+
+    <div>
+      <span class="badge" id="badgeText">KAVORENZA ? 2-SPIELER DUELL</span>
+    </div>
+
+    <h1 id="headline">Du wurdest eingeladen!</h1>
+    <p class="sub" id="subline">Tritt der Spielsitzung bei und starte das Duell.</p>
+
+    <div class="card">
+      <div class="code-label" id="codeLabel">DEIN RAUM-CODE</div>
+      <div class="code-box">
+        <span class="code-value" id="roomCodeDisplay">------</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyCode()">Kopieren</button>
+      </div>
+
+      <a id="btnOpenApp" href="#" class="btn btn-primary">
+        <span>?</span> <span id="btnOpenAppText">APP DIREKT ?FFNEN</span>
+      </a>
+
+      <a id="btnStore" href="https://play.google.com/store/apps/details?id=de.appsmakerdeluxe.Kavorenza" target="_blank" rel="noopener" class="btn btn-playstore">
+        <span>??</span> <span id="btnStoreText">AUF GOOGLE PLAY LADEN</span>
+      </a>
+
+      <div class="steps">
+        <div class="step-item">
+          <div class="step-num">1</div>
+          <div id="step1Text">Tippe auf <strong>"App direkt ?ffnen"</strong>, falls du Kavorenza schon auf deinem Android-Ger?t hast.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">2</div>
+          <div id="step2Text">Neu hier? Lade Kavorenza kostenlos auf <strong>Google Play</strong> herunter.</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">3</div>
+          <div id="step3Text">Kavorenza ?ffnet direkt diesen Raum ? oder gib den Raum-Code manuell ein. Viel Spa?!</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span>Kavorenza ? Pure 2-Player Gaming ? Keine Werbung ? </span>
+      <a href="../index.html" id="privacyLink">Datenschutz</a>
+    </footer>
+  </div>
+
+  <script>
+    const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=de.appsmakerdeluxe.Kavorenza";
+    const urlParams = new URLSearchParams(window.location.search);
+    const roomCode = (urlParams.get("room") || "").trim().toUpperCase();
+
+    const i18n = {
+      de: {
+        badge: "KAVORENZA ? 2-SPIELER DUELL",
+        headline: "Du wurdest eingeladen!",
+        subline: "Tritt der Spielsitzung bei und starte das Duell.",
+        codeLabel: "DEIN RAUM-CODE",
+        copy: "Kopieren",
+        copied: "Kopiert! ?",
+        openApp: "APP DIREKT ?FFNEN",
+        store: "AUF GOOGLE PLAY LADEN",
+        step1: 'Tippe auf <strong>"App direkt ?ffnen"</strong>, falls du Kavorenza schon auf deinem Android-Ger?t hast.',
+        step2: 'Neu hier? Lade Kavorenza kostenlos auf <strong>Google Play</strong> herunter.',
+        step3: 'Kavorenza ?ffnet direkt diesen Raum ? oder gib den Raum-Code manuell ein. Viel Spa?!',
+        privacy: "Datenschutz"
+      },
+      en: {
+        badge: "KAVORENZA ? 2-PLAYER DUEL",
+        headline: "You're Invited!",
+        subline: "Join the game session and start the duel.",
+        codeLabel: "YOUR ROOM CODE",
+        copy: "Copy",
+        copied: "Copied! ?",
+        openApp: "OPEN IN APP",
+        store: "GET ON GOOGLE PLAY",
+        step1: 'Tap <strong>"Open in App"</strong> if Kavorenza is already installed on your device.',
+        step2: 'New player? Download Kavorenza for free on <strong>Google Play</strong>.',
+        step3: 'Kavorenza will automatically join this room ? or enter the code manually. Have fun!',
+        privacy: "Privacy Policy"
+      }
+    };
+
+    let currentLang = "en";
+    const userLang = (navigator.language || navigator.userLanguage || "en").toLowerCase();
+    if (userLang.startsWith("de")) {
+      currentLang = "de";
+    }
+
+    function setLang(lang) {
+      currentLang = lang;
+      document.getElementById("btnDe").classList.toggle("active", lang === "de");
+      document.getElementById("btnEn").classList.toggle("active", lang === "en");
+
+      const t = i18n[lang];
+      document.getElementById("badgeText").innerText = t.badge;
+      document.getElementById("headline").innerText = t.headline;
+      document.getElementById("subline").innerText = t.subline;
+      document.getElementById("codeLabel").innerText = t.codeLabel;
+      document.getElementById("copyBtn").innerText = t.copy;
+      document.getElementById("btnOpenAppText").innerText = t.openApp;
+      document.getElementById("btnStoreText").innerText = t.store;
+      document.getElementById("step1Text").innerHTML = t.step1;
+      document.getElementById("step2Text").innerHTML = t.step2;
+      document.getElementById("step3Text").innerHTML = t.step3;
+      document.getElementById("privacyLink").innerText = t.privacy;
+    }
+
+    function init() {
+      if (roomCode) {
+        document.getElementById("roomCodeDisplay").innerText = roomCode;
+        const kavorenzaIntent = "intent://join?room=" + encodeURIComponent(roomCode) +
+          "#Intent;scheme=kavorenza;package=de.appsmakerdeluxe.Kavorenza;S.browser_fallback_url=" +
+          encodeURIComponent(PLAY_STORE_URL) + ";end";
+        document.getElementById("btnOpenApp").href = kavorenzaIntent;
+
+        const isAndroid = /Android/i.test(navigator.userAgent);
+        if (isAndroid) {
+          setTimeout(function() {
+            window.location.href = kavorenzaIntent;
+          }, 400);
+        }
+      } else {
+        document.getElementById("roomCodeDisplay").innerText = "SPIEL";
+        document.getElementById("btnOpenApp").href = "kavorenza://join";
+      }
+      setLang(currentLang);
+    }
+
+    function copyCode() {
+      if (!roomCode) return;
+      navigator.clipboard.writeText(roomCode).then(function() {
+        const btn = document.getElementById("copyBtn");
+        btn.innerText = i18n[currentLang].copied;
+        btn.classList.add("copied");
+        setTimeout(function() {
+          btn.innerText = i18n[currentLang].copy;
+          btn.classList.remove("copied");
+        }, 2200);
+      });
+    }
+
+    init();
+  </script>
+</body>
+</html>
