@@ -1,9 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bombPartyState, chooserState, connectFourState, cyberTapState, dilemmaState, reflexState, rockPaperState, ticTacToeState } from '../firebase-public/game-rules.js';
+import { arcadeRunState, bombPartyState, chooserState, colorRushRounds, connectFourState, cyberTapState, dilemmaState, emojiMemoryBoard, emojiMemoryState, MEMORY_TURN_TIMEOUT_SECONDS, numberTargetPuzzle, reflexState, rockPaperState, seededIndices, seededShuffle, ticTacToeState, wordSprintRounds } from '../firebase-public/game-rules.js';
+import { quizDuelState, quizQuestions } from '../firebase-public/quiz-data.js';
 
 const matchId = 'match-1';
 const move = (game, playerUid, type, payload = {}) => ({ game, matchId, playerUid, type, payload });
+
+test('room-seeded round generation matches Android golden vectors', () => {
+  assert.deepEqual(seededShuffle([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 2048), [5, 6, 2, 7, 4, 1, 3, 8, 9, 0]);
+  assert.deepEqual(seededIndices(2048, 5, 5), [0, 0, 0, 2, 1]);
+  const puzzle = numberTargetPuzzle(4123, 2);
+  assert.equal(puzzle.target, 21);
+  assert.equal(puzzle.bestExpression, '10 + 11 = 21');
+  assert.deepEqual(puzzle.options.map(option => option.expression), ['10 + 11 = 21', '7 × 9 = 63', '6 + 5 = 11', '8 × 8 = 64']);
+  assert.deepEqual(colorRushRounds(true, 2048).map(round => round[1]), ['CYAN', 'CYAN', 'CYAN', 'MINT', 'PINK']);
+  assert.deepEqual(wordSprintRounds(true, 2048).map(round => round[0]), ['BLITZ', 'STERN', 'FEUER', 'SIEG', 'NACHT']);
+  assert.deepEqual(emojiMemoryBoard(2048), ['🌟', '💎', '🔥', '👾', '👾', '🚀', '💎', '🌟', '🔥', '⚡', '🚀', '⚡']);
+});
+
+test('Speed Quiz uses Android question order, hides picks, scores answers and resets', () => {
+  const questions = quizQuestions(2048);
+  assert.deepEqual(questions.map(question => question.prompt), [
+    'Wie viele Millimeter sind 1,5 Meter?', 'Welche Währung hat Japan?', 'Aus welchem Land stammt Pizza ursprünglich?',
+    'Welche Einheit misst elektrische Spannung?', 'Welche Farbe hat eine reife Banane?',
+  ]);
+  let log = [move('code_breaker', 'host', 'answer', { answerIndex: questions[0].correctIndex })];
+  assert.equal(quizDuelState(log, matchId, 'host', 2048).answeredCurrent, true);
+  assert.equal(quizDuelState(log, matchId, 'guest', 2048).answeredCurrent, false);
+  for (let index = 0; index < questions.length; index++) {
+    if (index > 0) log.push(move('code_breaker', 'host', 'answer', { answerIndex: questions[index].correctIndex }));
+    log.push(move('code_breaker', 'guest', 'answer', { answerIndex: questions[index].correctIndex }));
+  }
+  const done = quizDuelState(log, matchId, 'host', 2048);
+  assert.equal(done.complete, true);
+  assert.equal(done.score, 5);
+  assert.equal(done.otherScore, 5);
+  assert.equal(quizDuelState([...log, move('code_breaker', 'host', 'reset')], matchId, 'host', 2048).questionIndex, 0);
+});
 
 test('Tic Tac Toe reads Android-compatible moves, turn order, reset and win line', () => {
   const log = [
@@ -141,4 +174,56 @@ test('Cyber Tap Rush scores both player totals, ties and resets', () => {
   assert.equal(cyberTapState(finished, matchId, 'host', 'guest').winnerUid, 'host');
   assert.equal(cyberTapState(finished.map(m => ({ ...m, payload: { value: '37' } })), matchId, 'host', 'guest').draw, true);
   assert.equal(cyberTapState([...finished, move('cyber_tap', 'host', 'reset')], matchId, 'host', 'guest').complete, false);
+});
+
+test('Arcade score tracks remain private per player and reset per match', () => {
+  const moves = [
+    ...Array.from({ length: 5 }, (_, index) => move('color_rush', 'host', 'pick', { value: `CYAN;${100 - index}` })),
+    ...Array.from({ length: 4 }, (_, index) => move('color_rush', 'guest', 'pick', { value: `PINK;${index}` })),
+  ];
+  assert.deepEqual(arcadeRunState(moves, 'color_rush', matchId, 'host'), {
+    own: moves.slice(0, 5), other: moves.slice(5), round: 5, ownScore: 490, otherScore: 6, complete: false,
+  });
+  assert.equal(arcadeRunState([...moves, move('color_rush', 'guest', 'pick', { value: 'MINT;1' })], 'color_rush', matchId, 'host').complete, true);
+  assert.equal(arcadeRunState([...moves, move('color_rush', 'host', 'reset')], 'color_rush', matchId, 'host').round, 0);
+});
+
+test('Emoji Memory follows Android match-retain, mismatch-switch, timeout and completion rules', () => {
+  assert.equal(MEMORY_TURN_TIMEOUT_SECONDS, 15);
+  const pair = (uid, a, b) => move('emoji_memory', uid, 'pick', { value: `pair:${a},${b}` });
+  const log = [pair('host', 3, 4), pair('host', 0, 2)];
+  const host = emojiMemoryState(log, matchId, 'KAVO', 'host', 'guest', 'host');
+  const guest = emojiMemoryState(log, matchId, 'KAVO', 'host', 'guest', 'guest');
+  assert.equal(host.ownPairs, 1);
+  assert.equal(host.otherPairs, 0);
+  assert.equal(host.nextPlayerUid, 'guest');
+  assert.equal(guest.nextPlayerUid, 'guest');
+  const timedOut = emojiMemoryState([...log, move('emoji_memory', 'guest', 'pick', { value: 'TIMEOUT' })], matchId, 'KAVO', 'host', 'guest', 'guest');
+  assert.equal(timedOut.nextPlayerUid, 'host');
+  assert.equal(emojiMemoryState(Array.from({ length: 6 }, (_, index) => pair('host', ...[[0, 5], [1, 10], [2, 8], [3, 4], [6, 7], [9, 11]][index])), matchId, 'KAVO', 'host', 'guest', 'host').complete, true);
+});
+
+test('Emoji Memory ignores forged out-of-turn, duplicate-card and already-matched picks', () => {
+  const pair = (uid, value) => move('emoji_memory', uid, 'pick', { value });
+  const moves = [
+    pair('guest', 'pair:0,5'), // guest cannot move before the host
+    pair('host', 'pair:0,0'), // one card cannot match itself
+    pair('host', 'pair:0,1'), // mismatch passes to the guest
+    pair('host', 'pair:0,5'), // stale host action is ignored
+    pair('guest', 'TIMEOUT'), // bounded turn hands control back
+    pair('host', 'pair:0,5'), // valid pair scores and retains the turn
+    pair('host', 'pair:0,5'), // matched cards cannot score twice
+  ];
+  const state = emojiMemoryState(moves, matchId, 'KAVO', 'host', 'guest', 'host');
+  assert.equal(state.ownPairs, 1);
+  assert.equal(state.otherPairs, 0);
+  assert.equal(state.nextPlayerUid, 'host');
+  assert.deepEqual(state.matched, [0, 5]);
+  assert.equal(state.turns, 2);
+});
+
+test('either connected player may expire the active turn and duplicate reports remain idempotent', () => {
+  const timeout = uid => move('emoji_memory', uid, 'pick', { value: 'TIMEOUT:host' });
+  const state = emojiMemoryState([timeout('guest'), timeout('host')], matchId, 'KAVO', 'host', 'guest', 'host');
+  assert.equal(state.nextPlayerUid, 'guest');
 });

@@ -1,3 +1,5 @@
+export const MEMORY_TURN_TIMEOUT_SECONDS = 15;
+
 const TTT_LINES = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
@@ -23,6 +25,120 @@ const DILEMMAS = [
   ['Für immer in einem Luxushotel wohnen','Ein riesiges Haus im abgelegenen Wald haben'], ['Niemals mehr frieren','Niemals mehr schwitzen'],
   ['Unter Wasser atmen können','Mit 200 km/h rennen können'], ['Dein Haustier kann sprechen','Die Gefühle aller Menschen spüren'],
 ];
+
+// Must match GameRules.SeededRandom and GameRules.seededShuffle on Android.
+
+export function seededIndices(seed, count, bound) {
+  if (!Number.isInteger(count) || count < 0 || !Number.isInteger(bound) || bound <= 0) throw new RangeError('count and bound must be positive integers');
+  let state = seed | 0;
+  return Array.from({ length: count }, () => {
+    state = Math.imul(state, 1664525) + 1013904223 | 0;
+    return Math.floor(((state >>> 0) * bound) / 0x1_0000_0000);
+  });
+}
+
+export function seededShuffle(values, seed) {
+  const shuffled = [...values];
+  let state = seed | 0;
+  for (let index = shuffled.length - 1; index > 0; index--) {
+    state = Math.imul(state, 1664525) + 1013904223 | 0;
+    const other = Math.floor(((state >>> 0) * (index + 1)) / 0x1_0000_0000);
+    [shuffled[index], shuffled[other]] = [shuffled[other], shuffled[index]];
+  }
+  return shuffled;
+}
+
+export function numberTargetPuzzle(seed, round) {
+  let state = (seed ^ Math.imul(round, 0x45D9F3B)) | 0;
+  const nextInt = bound => {
+    state = Math.imul(state, 1664525) + 1013904223 | 0;
+    return Math.floor(((state >>> 0) * bound) / 0x1_0000_0000);
+  };
+  const target = nextInt(16) + 9;
+  const expressions = new Map();
+  for (let a = 2; a <= 12; a++) for (let b = 2; b <= 12; b++) {
+    expressions.set(`${a} + ${b} = ${a + b}`, a + b);
+    if (a > b) expressions.set(`${a} − ${b} = ${a - b}`, a - b);
+    expressions.set(`${a} × ${b} = ${a * b}`, a * b);
+  }
+  const ranked = [...expressions].map(([expression, result]) => ({ expression, result }))
+    .sort((left, right) => Math.abs(left.result - target) - Math.abs(right.result - target) || (left.expression < right.expression ? -1 : left.expression > right.expression ? 1 : 0));
+  const best = ranked[0];
+  const distractors = ranked.slice(1).map((_, index, items) => index);
+  for (let index = distractors.length - 1; index > 0; index--) {
+    const other = nextInt(index + 1);
+    [distractors[index], distractors[other]] = [distractors[other], distractors[index]];
+  }
+  const options = [best, ...distractors.slice(0, 3).map(index => ranked[index + 1])];
+  for (let index = options.length - 1; index > 0; index--) {
+    const other = nextInt(index + 1);
+    [options[index], options[other]] = [options[other], options[index]];
+  }
+  return { target, options, bestExpression: best.expression };
+}
+
+export function colorRushRounds(isGerman, seed) {
+  const labels = isGerman
+    ? ['CYAN TIPPEN', 'PINK TIPPEN', 'MINZE TIPPEN', 'BERNSTEIN TIPPEN', 'VIOLETT TIPPEN']
+    : ['TAP CYAN', 'TAP PINK', 'TAP MINT', 'TAP AMBER', 'TAP VIOLET'];
+  const colors = ['CYAN', 'PINK', 'MINT', 'AMBER', 'VIOLET'];
+  return seededIndices(seed, 5, labels.length).map(index => [labels[index], colors[index]]);
+}
+
+export function wordSprintRounds(isGerman, seed) {
+  const rounds = isGerman
+    ? [['NACHT', ['NACHT', 'LICHT', 'RAUM', 'DUELL']], ['BLITZ', ['DONNER', 'BLITZ', 'REGEN', 'SONNE']], ['STERN', ['MOND', 'STERN', 'SONNE', 'PLANET']], ['FEUER', ['WASSER', 'FEUER', 'ERDE', 'LUFT']], ['SIEG', ['SPIEL', 'RUNDE', 'SIEG', 'PUNKT']]]
+    : [['NIGHT', ['NIGHT', 'LIGHT', 'SPACE', 'DUEL']], ['FLASH', ['THUNDER', 'FLASH', 'RAIN', 'SOLAR']], ['STAR', ['MOON', 'STAR', 'SUN', 'PLANET']], ['FIRE', ['WATER', 'FIRE', 'EARTH', 'WIND']], ['VICTORY', ['MATCH', 'ROUND', 'VICTORY', 'POINT']]];
+  return seededShuffle(rounds, seed);
+}
+
+export function emojiMemoryBoard(seed) {
+  return seededShuffle(['⚡', '⚡', '🌟', '🌟', '🔥', '🔥', '💎', '💎', '👾', '👾', '🚀', '🚀'], seed);
+}
+
+export function arcadeRunState(moves, game, matchId, localUid) {
+  const picks = currentRound(moves, game, matchId).filter(move => move.type === 'pick');
+  const own = picks.filter(move => move.playerUid === localUid);
+  const other = picks.filter(move => move.playerUid !== localUid);
+  const scoreOf = list => list.reduce((total, move) => total + (Number(move.payload?.value?.split?.(';')?.[1]) || 0), 0);
+  return { own, other, round: own.length, ownScore: scoreOf(own), otherScore: scoreOf(other), complete: own.length >= 5 && other.length >= 5 };
+}
+
+export function emojiMemoryState(moves, matchId, roomCode, hostUid, guestUid, localUid) {
+  const board = emojiMemoryBoard(kotlinStringHash(roomCode || 'KAVO'));
+  const picks = currentRound(moves, 'emoji_memory', matchId).filter(move => move.type === 'pick');
+  const matched = new Set();
+  let nextPlayerUid = hostUid;
+  let visible = [];
+  let turns = 0;
+  let hostPairs = 0, guestPairs = 0;
+  for (const pick of picks) {
+    const value = pick.payload?.value || '';
+    if (value === 'TIMEOUT' && pick.playerUid === nextPlayerUid) {
+      nextPlayerUid = nextPlayerUid === hostUid ? guestUid : hostUid;
+      visible = [];
+      continue;
+    }
+    if (value.startsWith('TIMEOUT:')) {
+      if (value.slice('TIMEOUT:'.length) !== nextPlayerUid || ![hostUid, guestUid].includes(pick.playerUid)) continue;
+      nextPlayerUid = nextPlayerUid === hostUid ? guestUid : hostUid;
+      visible = [];
+      continue;
+    }
+    if (pick.playerUid !== nextPlayerUid) continue;
+    const cells = value.replace(/^pair:/, '').split(',').map(Number);
+    if (cells.length !== 2 || cells.some(index => !Number.isInteger(index) || index < 0 || index >= board.length || matched.has(index)) || cells[0] === cells[1]) continue;
+    turns++;
+    visible = cells;
+    if (board[cells[0]] === board[cells[1]]) {
+      cells.forEach(index => matched.add(index));
+      if (pick.playerUid === hostUid) hostPairs++; else guestPairs++;
+    } else nextPlayerUid = nextPlayerUid === hostUid ? guestUid : hostUid;
+  }
+  const ownPairs = localUid === hostUid ? hostPairs : guestPairs;
+  const otherPairs = localUid === hostUid ? guestPairs : hostPairs;
+  return { board, picks, matched: [...matched], visible, nextPlayerUid, ownPairs, otherPairs, turns, complete: matched.size === 12 || turns >= 24 };
+}
 
 function kotlinStringHash(value) {
   let hash = 0;
