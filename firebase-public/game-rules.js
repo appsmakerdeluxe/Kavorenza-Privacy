@@ -64,7 +64,7 @@ export function numberTargetPuzzle(seed, round) {
   const ranked = [...expressions].map(([expression, result]) => ({ expression, result }))
     .sort((left, right) => Math.abs(left.result - target) - Math.abs(right.result - target) || (left.expression < right.expression ? -1 : left.expression > right.expression ? 1 : 0));
   const best = ranked[0];
-  const distractors = ranked.slice(1).map((_, index, items) => index);
+  const distractors = ranked.slice(1).map((_, index) => index);
   for (let index = distractors.length - 1; index > 0; index--) {
     const other = nextInt(index + 1);
     [distractors[index], distractors[other]] = [distractors[other], distractors[index]];

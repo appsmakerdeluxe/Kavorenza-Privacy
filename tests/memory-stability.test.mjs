@@ -17,7 +17,6 @@ test('memory reducer survives thousands of mixed actions with identical player v
     const moves = [];
     for (let turn = 0; turn < 40; turn++) {
       const host = emojiMemoryState(moves, `match-${seed}`, `ROOM${seed}`, 'host', 'guest', 'host');
-      const guest = emojiMemoryState(moves, `match-${seed}`, `ROOM${seed}`, 'host', 'guest', 'guest');
       const actor = next() % 4 === 0 ? (host.nextPlayerUid === 'host' ? 'guest' : 'host') : host.nextPlayerUid;
       const value = next() % 5 === 0
         ? `TIMEOUT:${host.nextPlayerUid}`

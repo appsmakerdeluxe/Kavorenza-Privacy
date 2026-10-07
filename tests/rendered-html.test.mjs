@@ -8,7 +8,7 @@ const htmlUrl = new URL("../firebase-public/index.html", import.meta.url);
 test("Firebase-hosted player page exposes a complete two-player cross-platform flow", async () => {
   const html = await readFile(htmlUrl, "utf8");
   for (const id of ["home", "createBtn", "showJoinBtn", "room", "voteCard", "readyCard", "gameCard", "connectionError", "queueScreen", "quickMatchBtn"]) {
-    assert.match(html, new RegExp(`id=[\"']${id}[\"']`), `missing UI element ${id}`);
+    assert.match(html, new RegExp(`id=["']${id}["']`), `missing UI element ${id}`);
   }
   assert.match(html, /Firebase Anonymous Auth/);
   assert.match(html, /maxPlayers:2/);
