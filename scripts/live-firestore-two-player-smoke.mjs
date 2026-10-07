@@ -18,6 +18,16 @@ const games = [
   ['bomb_party', 'pass', {}],
   ['chooser', 'hold', {}],
   ['would_you_rather', 'pick', { choice: 'A', round: 0 }],
+  ['prism_relay', 'pick', { value: '0', round: 0 }],
+  ['switchstorm', 'pick', { value: '0', round: 0 }],
+  ['shape_shift', 'pick', { value: '0', round: 0 }],
+  ['maze_courier', 'pick', { value: '0', round: 0 }],
+  ['tower_balance', 'pick', { value: '0', round: 0 }],
+  ['cargo_sort', 'pick', { value: '0', round: 0 }],
+  ['pixel_forge', 'pick', { value: '0', round: 0 }],
+  ['echo_wave', 'pick', { value: '0', round: 0 }],
+  ['orbit_rescue', 'pick', { value: '0', round: 0 }],
+  ['comet_curling', 'pick', { value: '0', round: 0 }],
 ];
 
 function value(input) {

@@ -2,6 +2,140 @@ import { getWebLanguage } from './web-i18n.js';
 import { DILEMMA_TRANSLATIONS } from './dilemma-translations.js';
 
 export const MEMORY_TURN_TIMEOUT_SECONDS = 15;
+export const NEW_MINIGAME_ECHO_REVEAL_MS = 1_800;
+export function switchstormToggleMask(mask, cell) {
+  if (!Number.isInteger(cell) || cell < 0 || cell > 8) throw new RangeError('Switchstorm cell must be 0..8');
+  const row = Math.floor(cell / 3), column = cell % 3;
+  let result = mask ^ (1 << cell);
+  if (row > 0) result ^= 1 << (cell - 3);
+  if (row < 2) result ^= 1 << (cell + 3);
+  if (column > 0) result ^= 1 << (cell - 1);
+  if (column < 2) result ^= 1 << (cell + 1);
+  return result;
+}
+export function switchstormSolutionMask(seed, round) {
+  if (!Number.isInteger(round) || round < 0) throw new RangeError('Switchstorm round must be non-negative');
+  let state = (seed | 0) ^ Math.imul(round + 1, 0x45d9f3b), mask = 0;
+  const scrambleCount = 3 + ((state >>> 1) & 3);
+  for (let step = 0; step < scrambleCount; step++) {
+    state = (Math.imul(state, 1_664_525) + 1_013_904_223) | 0;
+    mask ^= 1 << ((state >>> 16) % 9);
+  }
+  if (mask === 0) mask = 1 << (((seed | 0) >>> (round % 16)) % 9);
+  return mask;
+}
+export function switchstormInitialMask(seed, round) {
+  let board = 0;
+  const presses = switchstormSolutionMask(seed, round);
+  for (let cell = 0; cell < 9; cell++) if (presses & (1 << cell)) board = switchstormToggleMask(board, cell);
+  return board;
+}
+export function switchstormBoardMask(seed, round, pressedMask) {
+  let board = switchstormInitialMask(seed, round);
+  for (let cell = 0; cell < 9; cell++) if ((pressedMask & (1 << cell)) !== 0) board = switchstormToggleMask(board, cell);
+  return board;
+}
+export function pixelForgeTargetMask(seed, round) {
+  const patterns=[[0b0110,0b1111,0b1111,0b0110],[0b0010,0b0111,0b1111,0b0111],[0b0001,0b0011,0b0111,0b1111],[0b1111,0b1000,0b1100,0b1110]];
+  const rows=patterns[newMiniGameTarget('pixel_forge',round,seed)];
+  let mask=0;
+  rows.forEach((bits,row)=>{for(let column=0;column<4;column++)if(bits&(1<<column))mask|=1<<(row*4+column);});
+  return mask;
+}
+export function echoWaveSequence(seed, round) {
+  if (!Number.isInteger(round) || round < 0) throw new RangeError('Echo Wave round must be non-negative');
+  let state = (seed | 0) ^ Math.imul(round + 1, 0x27d4eb2d);
+  return Array.from({length:3+Math.min(round,3)},()=>{state=(Math.imul(state,1_664_525)+1_013_904_223)|0;return (state>>>16)&3;});
+}
+export function echoWaveEncode(sequence) {
+  if(!Array.isArray(sequence)||sequence.length<1||sequence.length>6||sequence.some(color=>!Number.isInteger(color)||color<0||color>3))throw new RangeError('Echo Wave sequence must contain 1..6 colors');
+  return (1<<(sequence.length*2))+sequence.reduce((value,color,index)=>value+(color<<(index*2)),0);
+}
+export function prismRelayUsesUpperRoute(seed,round){return newMiniGameTarget('prism_relay',round,seed)%2===0;}
+export function prismRelaySolutionMask(seed,round){return prismRelayUsesUpperRoute(seed,round)?12:3;}
+export function prismRelayReachesGoal(seed,round,orientationMask){
+  if(!Number.isInteger(orientationMask)||orientationMask<0||orientationMask>15)return false;
+  const upper=prismRelayUsesUpperRoute(seed,round),mirrors=upper?[[3,0],[0,1],[2,2],[5,3]]:[[3,0],[6,1],[8,2],[5,3]],slots=new Map(mirrors.map(([cell,slot])=>[cell,slot]));
+  let row=1,column=-1,direction=1;const visited=new Set();
+  for(let step=0;step<24;step++){
+    if(direction===0)row--;else if(direction===1)column++;else if(direction===2)row++;else column--;
+    if(row===1&&column===3)return true;
+    if(row<0||row>2||column<0||column>2||row===1&&column===1)return false;
+    const cell=row*3+column,slot=slots.get(cell);
+    if(slot!==undefined){const key=`${cell}:${direction}`;if(visited.has(key))return false;visited.add(key);const backslash=(orientationMask&(1<<slot))!==0;direction=backslash?[3,2,1,0][direction]:[1,0,3,2][direction];}
+  }
+  return false;
+}
+export function mazeCourierPath(seed,round){return [[1,2,1,2],[2,1,2,1],[1,1,2,2],[2,2,1,1]][newMiniGameTarget('maze_courier',round,seed)];}
+export function mazeCourierEncode(path){if(!Array.isArray(path)||path.length!==4||path.some(direction=>!Number.isInteger(direction)||direction<0||direction>3))throw new RangeError('Maze Courier path must contain four directions');return path.reduce((value,direction,index)=>value+(direction<<(index*2)),0);}
+export function mazeCourierOpenMask(seed,round){let row=0,column=0,mask=1;for(const direction of mazeCourierPath(seed,round)){if(direction===0)row--;else if(direction===1)column++;else if(direction===2)row++;else column--;mask|=1<<(row*3+column);}return mask;}
+export function mazeCourierCanMove(seed,round,cell,direction){if(!Number.isInteger(cell)||cell<0||cell>8||!Number.isInteger(direction)||direction<0||direction>3)return false;const row=Math.floor(cell/3),column=cell%3,next=direction===0?row>0?cell-3:-1:direction===1?column<2?cell+1:-1:direction===2?row<2?cell+3:-1:column>0?cell-1:-1;return next>=0&&(mazeCourierOpenMask(seed,round)&(1<<next))!==0;}
+export function cargoSortPermutation(seed,round){if(!Number.isInteger(round)||round<0)throw new RangeError('Cargo Sort round must be non-negative');return [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]][(((seed|0)>>> (round%16))+round*3)%6];}
+export function cargoSortEncode(permutation){if(!Array.isArray(permutation)||permutation.length!==3||new Set(permutation).size!==3||permutation.some(bay=>!Number.isInteger(bay)||bay<0||bay>2))throw new RangeError('Cargo Sort requires a permutation of bays 0..2');return permutation.reduce((value,bay,index)=>value|(bay<<(index*2)),0);}
+export function orbitRescueSequence(seed,round){if(!Number.isInteger(round)||round<0)throw new RangeError('Orbit Rescue round must be non-negative');let state=(seed|0)^Math.imul(round+1,0x145d39e5);return Array.from({length:3},()=>{state=(Math.imul(state,1_664_525)+1_013_904_223)|0;return(state>>>16)&3;});}
+export function orbitRescueEncode(burns){if(!Array.isArray(burns)||burns.length!==3||burns.some(value=>!Number.isInteger(value)||value<0||value>3))throw new RangeError('Orbit Rescue requires three burns');return burns.reduce((value,burn,index)=>value|(burn<<(index*2)),0);}
+
+export const NEW_MINIGAMES = Object.freeze([
+  ['prism_relay','🔺','Prismen-Relay','Leite den Laser um den mittleren Blocker bis zum Empfänger.'],
+  ['switchstorm','⚡','Schaltersturm','Schalte das 3×3-Raster aus; jeder Schalter kippt sich und seine Nachbarn.'],
+  ['shape_shift','◈','Formen-Shift','Drehe die Form in 90°-Schritten zur Ziel-Silhouette.'],
+  ['maze_courier','🧭','Labyrinth-Kurier','Wähle Zug für Zug den sicheren Weg durch das Labyrinth.'],
+  ['tower_balance','⚖️','Turm-Balance','Halte die Wippe mit dem passenden Gewicht im Gleichgewicht.'],
+  ['cargo_sort','📦','Fracht-Sortierer','Sortiere jede Kiste in den passenden Frachtraum.'],
+  ['pixel_forge','▦','Pixel-Schmiede','Löse ein 4×4-Nonogramm anhand von Zeilen- und Spaltenhinweisen.'],
+  ['echo_wave','〰️','Echo-Welle','Merke dir die Lichtfolge und wiederhole sie.'],
+  ['orbit_rescue','🪐','Orbit-Rettung','Lenke die Sonde mit einem Impuls in die sichere Umlaufbahn.'],
+  ['comet_curling','☄️','Kometen-Curling','Wähle den Schub, der den Kometen am Ziel landen lässt.'],
+]);
+const NEW_MINIGAME_LENGTHS = [4,9,4,4,5,4,4,4,4,5];
+const NEW_MINIGAME_BASES = [0,0,1,1,2,1,2,0,2,3];
+export function newMiniGameTarget(game, round, seed) {
+  const index = NEW_MINIGAMES.findIndex(([id]) => id === game);
+  if (index < 0 || !Number.isInteger(round) || round < 0) throw new RangeError('Unknown game or invalid round');
+  return (NEW_MINIGAME_BASES[index] + ((seed | 0) >>> (round % 16) & 3) + round) % NEW_MINIGAME_LENGTHS[index];
+}
+export function newMiniGameMaxScore(game) {
+  if (!NEW_MINIGAMES.some(([id]) => id === game)) throw new RangeError('Unknown mini-game');
+  return game === 'comet_curling' ? 10 : 5;
+}
+export function newMiniGameRoundScore(game, answer, target) {
+  if (answer == null) return 0;
+  const distance = Math.abs(answer - target);
+  if (game === 'tower_balance') return distance <= 1 ? 1 : 0;
+  if (game === 'comet_curling') return Math.max(0, 2 - distance);
+  return distance === 0 ? 1 : 0;
+}
+export function newMiniGameScoreRound(game, answer, round, seed) {
+  if (game === 'prism_relay') return prismRelayReachesGoal(seed,round,answer)?1:0;
+  if (game === 'maze_courier') return answer===mazeCourierEncode(mazeCourierPath(seed,round))?1:0;
+  if (game === 'cargo_sort') return answer===cargoSortEncode(cargoSortPermutation(seed,round))?1:0;
+  if (game === 'orbit_rescue') return answer===orbitRescueEncode(orbitRescueSequence(seed,round))?1:0;
+  if (game === 'switchstorm') return Number.isInteger(answer) && answer >= 0 && answer <= 511 && switchstormBoardMask(seed, round, answer) === 0 ? 1 : 0;
+  if (game === 'pixel_forge') return answer === pixelForgeTargetMask(seed,round) ? 1 : 0;
+  if (game === 'echo_wave') return answer === echoWaveEncode(echoWaveSequence(seed,round)) ? 1 : 0;
+  return newMiniGameRoundScore(game, answer, newMiniGameTarget(game, round, seed));
+}
+export function newMiniGameState(moves, game, matchId, uid, opponentUid, seed) {
+  if (!NEW_MINIGAMES.some(([id]) => id === game)) throw new RangeError('Unknown mini-game');
+  const scoped = moves.filter(move => move.game === game && move.matchId === matchId);
+  const resetIndex = scoped.findLastIndex(move => move.type === 'reset');
+  const picks = scoped.slice(resetIndex + 1).filter(move => move.type === 'pick');
+  const accept = playerUid => {
+    const accepted=[];
+    for(const move of picks.filter(item=>item.playerUid===playerUid)){
+      if(accepted.length>=5)break;
+      const round=move.payload?.round??accepted.length,value=move.payload?.value;
+      const valueLimit=game==='prism_relay'?16:game==='maze_courier'?256:game==='cargo_sort'||game==='orbit_rescue'?64:game==='switchstorm'?512:game==='pixel_forge'?65536:game==='echo_wave'?8192:NEW_MINIGAME_LENGTHS[NEW_MINIGAMES.findIndex(([id])=>id===game)];
+      const valid=value==='TIMEOUT'||typeof value==='string'&&/^\d+$/.test(value)&&Number(value)<valueLimit;
+      if(Number.isInteger(round)&&round===accepted.length&&valid)accepted.push(move);
+    }
+    return accepted;
+  };
+  const own = accept(uid),other = accept(opponentUid);
+  const score = list => list.slice(0,5).reduce((sum,move,index) => sum + newMiniGameScoreRound(game, move.payload?.value === 'TIMEOUT' ? null : Number(move.payload?.value), index, seed),0);
+  const ownScore=score(own),otherScore=score(other),complete=own.length>=5&&other.length>=5;
+  return { round:Math.min(own.length,5),otherRound:Math.min(other.length,5),ownScore,otherScore,maxScore:newMiniGameMaxScore(game),answered:own.length>other.length||own.length>=5,complete,winnerUid:!complete||ownScore===otherScore?null:ownScore>otherScore?uid:opponentUid };
+}
 
 const TTT_LINES = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],

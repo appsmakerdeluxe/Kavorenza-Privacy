@@ -46,9 +46,49 @@ test('game catalogue names and descriptions have five-language variants', () => 
   assert.equal(translateWebText('MINZE', 'it'), 'MENTA');
 });
 
+test('browser lobby advertises the complete 23-game catalogue in every locale', () => {
+  const source = 'Alle 23 Mini-Spiele sind im Browser spielbar.';
+  const expected = {
+    de: source,
+    en: 'All 23 mini-games are playable in the browser.',
+    es: 'Los 23 minijuegos están disponibles en el navegador.',
+    fr: 'Les 23 mini-jeux sont jouables dans le navigateur.',
+    it: 'Tutti i 23 minigiochi sono disponibili nel browser.'
+  };
+  for (const [language, copy] of Object.entries(expected)) {
+    assert.equal(translateWebText(source, language), copy);
+  }
+});
+
 test('text translations preserve surrounding whitespace and unknown dynamic copy safely', () => {
   assert.equal(translateWebText('  RAUM ERSTELLEN  ', 'fr'), '  CRÉER UNE SALLE  ');
   assert.equal(translateWebText('unmapped dynamic error', 'es'), 'unmapped dynamic error');
+});
+
+test('general settings and audio labels are localized in all five supported languages', () => {
+  const labels = {
+    de: ['⚙ Einstellungen', 'Einstellungen', 'Sprache', '♫ Musik aus', '♪ Effekte aus', 'Schließen'],
+    en: ['⚙ Settings', 'Settings', 'Language', '♫ Music off', '♪ Effects off', 'Close'],
+    es: ['⚙ Ajustes', 'Ajustes', 'Idioma', '♫ Música apagada', '♪ Efectos apagados', 'Cerrar'],
+    fr: ['⚙ Réglages', 'Réglages', 'Langue', '♫ Musique coupée', '♪ Effets coupés', 'Fermer'],
+    it: ['⚙ Impostazioni', 'Impostazioni', 'Lingua', '♫ Musica disattivata', '♪ Effetti disattivati', 'Chiudi']
+  };
+  for (const [language, expected] of Object.entries(labels)) {
+    const source = ['⚙ Einstellungen', 'Einstellungen', 'Sprache', '♫ Musik aus', '♪ Effekte aus', 'Schließen'];
+    assert.deepEqual(source.map(text => translateWebText(text, language)), expected);
+  }
+});
+
+test('Switchstorm catalogue copy explains the grid-flip mechanic in all five languages', () => {
+  const source='Schalte das 3×3-Lichtraster aus; jeder Schalter kippt sich und seine Nachbarn.';
+  const expected={
+    de:source,
+    en:'Clear the 3×3 light grid; each switch flips itself and its neighbors.',
+    es:'Apaga la cuadrícula 3×3; cada interruptor cambia su luz y la de sus vecinos.',
+    fr:'Éteins la grille 3×3 ; chaque interrupteur inverse sa case et ses voisines.',
+    it:'Spegni la griglia 3×3; ogni interruttore cambia la sua luce e quella dei vicini.'
+  };
+  for(const [language,copy] of Object.entries(expected)) assert.equal(translateWebText(source,language),copy);
 });
 
 test('core play prompts and turn instructions are available in every locale', () => {
@@ -191,7 +231,7 @@ test('room stages, player badges, and voting summary translate their embedded ga
   assert.equal(translateWebText('Deine Wahl: noch offen · Gegenstimme offen', 'es'), 'Tu voto: sin elegir · falta el voto rival');
 });
 
-test('all thirteen short game tutorials are translated in every supported language', () => {
+test('all twenty-three short game tutorials are translated in every supported language', () => {
   const tutorials = [
     'Platziert X und O abwechselnd. Wer zuerst drei Zeichen in einer Reihe hat, gewinnt.',
     'Wartet auf das GO-Signal und tippt dann so schnell wie möglich. Bei Fake-Signalen nicht tippen.',
@@ -205,9 +245,19 @@ test('all thirteen short game tutorials are translated in every supported langua
     'Tippt im kurzen Zeitfenster so oft wie möglich.',
     'Gebt die Bombe mit Pass weiter, bevor der Countdown abläuft.',
     'Beide halten gedrückt. Das Spiel bestimmt nach dem Signal zufällig, wer ausgewählt wird.',
-    'Wählt eine Seite und vergleicht anschließend eure Antworten.'
+    'Wählt eine Seite und vergleicht anschließend eure Antworten.',
+    'Drehe vier Spiegel, um den Laser um den mittleren Blocker zum Empfänger zu leiten.',
+    'Löse das 3×3-Lichtraster: Jeder Schalter kippt sich und seine Nachbarn. Schalte alle Lichter aus und bestätige.',
+    'Drehe die Form in 90°-Schritten, bis sie zur Ziel-Silhouette passt.',
+    'Wähle Zug für Zug den sicheren Weg durch das Labyrinth.',
+    'Halte die Wippe mit dem passenden Gewicht im Gleichgewicht.',
+    'Sortiere jede Kiste in den passenden Frachtraum.',
+    'Löse ein 4×4-Nonogramm anhand von Zeilen- und Spaltenhinweisen.',
+    'Merke dir die Lichtfolge und wiederhole sie.',
+    'Lenke die Sonde mit einem Impuls in die sichere Umlaufbahn.',
+    'Wähle den Schub, der den Kometen am Ziel landen lässt.'
   ];
-  assert.equal(tutorials.length, 13);
+  assert.equal(tutorials.length, 23);
   for (const text of tutorials) {
     for (const language of ['en', 'es', 'fr', 'it']) {
       assert.notEqual(translateWebText(text, language), text, `${language} translation missing for: ${text}`);
