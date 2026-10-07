@@ -143,6 +143,23 @@ test('Would You Rather hides choices until both players answer and advances toge
   assert.notDeepEqual([next.optionA, next.optionB], [hostView.optionA, hostView.optionB]);
 });
 
+test('all 36 Would You Rather rounds are localized without changing shared round or pick state', () => {
+  const nextMoves = Array.from({ length: 35 }, (_, index) => move('dilemma', 'host', 'next', { round: index + 1 }));
+  for (const language of ['en', 'es', 'fr', 'it']) {
+    for (let round = 0; round < 36; round++) {
+      const moves = nextMoves.slice(0, round);
+      const german = dilemmaState(moves, matchId, '', 'host', 'de');
+      const localized = dilemmaState(moves, matchId, '', 'host', language);
+      assert.equal(localized.round, german.round);
+      assert.ok(localized.optionA.length > 2 && localized.optionB.length > 2);
+      assert.notDeepEqual([localized.optionA, localized.optionB], [german.optionA, german.optionB]);
+      const picked = dilemmaState([...moves, move('dilemma', 'host', 'pick', { choice: 'A', round })], matchId, '', 'host', language);
+      assert.equal(picked.mine, 'A');
+      assert.equal(picked.theirs, null);
+    }
+  }
+});
+
 test('Bomb Party alternates turns, shortens fuse, resets and awards the non-exploding player', () => {
   const now = 20_000;
   const first = bombPartyState([], matchId, 'ABC123', 'host', 'guest', 'host', now, 10_000);

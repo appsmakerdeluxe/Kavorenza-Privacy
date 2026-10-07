@@ -1,3 +1,6 @@
+import { getWebLanguage } from './web-i18n.js';
+import { DILEMMA_TRANSLATIONS } from './dilemma-translations.js';
+
 export const MEMORY_TURN_TIMEOUT_SECONDS = 15;
 
 const TTT_LINES = [
@@ -302,7 +305,7 @@ export function reflexState(moves, matchId, hostUid, guestUid) {
   };
 }
 
-export function dilemmaState(moves, matchId, roomCode, localUid) {
+export function dilemmaState(moves, matchId, roomCode, localUid, language = getWebLanguage()) {
   const roundMoves = currentRound(moves, 'dilemma', matchId);
   const roundAdvances = roundMoves.filter(move => move.type === 'next').length;
   const lastAdvance = roundMoves.findLastIndex(move => move.type === 'next');
@@ -311,8 +314,10 @@ export function dilemmaState(moves, matchId, roomCode, localUid) {
   const mine = picks.findLast(move => move.playerUid === localUid)?.payload?.choice ?? null;
   const theirs = picks.findLast(move => move.playerUid !== localUid)?.payload?.choice ?? null;
   const seed = Math.abs(kotlinStringHash(roomCode || ''));
-  const dilemma = DILEMMAS[(seed + roundAdvances) % DILEMMAS.length];
-  return { round: roundAdvances, optionA: dilemma[0], optionB: dilemma[1], mine, theirs, complete: mine !== null && theirs !== null, match: mine !== null && theirs !== null && mine === theirs };
+  const dilemmaIndex = (seed + roundAdvances) % DILEMMAS.length;
+  const dilemma = DILEMMAS[dilemmaIndex];
+  const localized = DILEMMA_TRANSLATIONS[language]?.[dilemmaIndex];
+  return { round: roundAdvances, optionA: localized?.[0] ?? dilemma[0], optionB: localized?.[1] ?? dilemma[1], mine, theirs, complete: mine !== null && theirs !== null, match: mine !== null && theirs !== null && mine === theirs };
 }
 
 export function bombPartyState(moves, matchId, roomCode, hostUid, guestUid, localUid, now = Date.now(), roomStartedAt = now) {
