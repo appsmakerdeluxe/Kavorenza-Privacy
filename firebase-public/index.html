@@ -132,7 +132,7 @@
 <script type="module">
   import { MAX_QUEUE_RECONNECT_ATTEMPTS, queueRetryDelay } from './queue-retry.js';
   import { getWebLanguage, installWebLocalization, translateWebText } from './web-i18n.js';
-  import { arcadeRunState, bombPartyState, cargoSortEncode, cargoSortPermutation, chooserState, colorRushRounds, connectFourState, cyberTapState, dilemmaState, echoWaveEncode, echoWaveSequence, emojiMemoryState, mazeCourierCanMove, mazeCourierEncode, mazeCourierOpenMask, mazeCourierPath, MEMORY_TURN_TIMEOUT_SECONDS, NEW_MINIGAME_ECHO_REVEAL_MS, newMiniGameRemainingMs, newMiniGameRoundStartedAtMs, newMiniGameState, newMiniGameTarget, NEW_MINIGAMES, numberTargetPuzzle, orbitRescueEncode, orbitRescueSequence, pixelForgeTargetMask, prismRelayReachesGoal, prismRelaySolutionMask, prismRelayUsesUpperRoute, reflexState, rockPaperState, switchstormBoardMask, switchstormInitialMask, ticTacToeState, wordSprintRounds } from './game-rules.js';
+  import { arcadeRunState, bombPartyState, cargoSortEncode, cargoSortPermutation, chooserState, colorRushRounds, connectFourState, cyberTapState, dilemmaState, echoWaveEncode, echoWaveSequence, emojiMemoryState, mazeCourierCanMove, mazeCourierEncode, mazeCourierOpenMask, mazeCourierPath, MEMORY_TURN_TIMEOUT_SECONDS, NEW_MINIGAME_ECHO_REVEAL_MS, newMiniGamePhase, newMiniGameRemainingMs, newMiniGameRoundStartedAtMs, newMiniGameState, newMiniGameTarget, NEW_MINIGAMES, numberTargetPuzzle, orbitRescueEncode, orbitRescueSequence, pixelForgeTargetMask, prismRelayReachesGoal, prismRelaySolutionMask, prismRelayUsesUpperRoute, reflexState, rockPaperState, switchstormBoardMask, switchstormInitialMask, ticTacToeState, wordSprintRounds } from './game-rules.js';
   import { initializeApp } from './firebase-sdk.bundle.js';
   import { quizDuelState } from './quiz-data.js';
   import { CLOSED_ROOM_RETENTION_MS, purgeClosedRoom } from './room-cleanup.js';
@@ -261,9 +261,28 @@
     const active = moves.filter(move => move.game === game && move.matchId === room.matchId && move.type === 'pick');
     const mine = active.filter(move => move.playerUid === uid), other = active.filter(move => move.playerUid !== uid);
     const index = NEW_MINIGAMES.findIndex(entry => entry[0] === game), target = newMiniGameTarget(game, Math.min(mine.length,4), roomSeed()), customGame = index >= 0;
+    const phase = newMiniGamePhase(state, mine.length);
     $('gameName').textContent = `${icon} ${translateWebText(title, lang).toUpperCase()}`;
     $('gameMessage').textContent = translateWebText(summary, lang);
     $('newRoundBtn').textContent = translateWebText('NEUE RUNDE', lang);
+    if (phase !== 'playing') {
+      const text = (...values) => values[Math.max(0, ['de','en','es','fr','it'].indexOf(lang))];
+      $('ticBoard').replaceChildren();
+      if (phase === 'complete') {
+        $('gameState').textContent = state.winnerUid == null
+          ? text('UNENTSCHIEDEN','DRAW','EMPATE','ÉGALITÉ','PAREGGIO')
+          : state.winnerUid === uid
+            ? text('DU GEWINNST! ✨','YOU WIN! ✨','¡GANAS! ✨','TU GAGNES ! ✨','HAI VINTO! ✨')
+            : text('MITSPIELER GEWINNT','OPPONENT WINS','GANA EL RIVAL','L’AUTRE GAGNE','VINCE L’AVVERSARIO');
+        $('gameResult').textContent = text(`Du ${state.ownScore}/${state.maxScore} · Mitspieler ${state.otherScore}/${state.maxScore}`,`You ${state.ownScore}/${state.maxScore} · Opponent ${state.otherScore}/${state.maxScore}`,`Tú ${state.ownScore}/${state.maxScore} · Rival ${state.otherScore}/${state.maxScore}`,`Toi ${state.ownScore}/${state.maxScore} · Autre ${state.otherScore}/${state.maxScore}`,`Tu ${state.ownScore}/${state.maxScore} · Avversario ${state.otherScore}/${state.maxScore}`);
+        $('gameResult').classList.remove('hidden');
+      } else {
+        $('gameState').textContent = text(`Dein Ergebnis ${state.ownScore}/5 · warte auf Mitspieler (${other.length}/5)`,`Your score ${state.ownScore}/5 · waiting for opponent (${other.length}/5)`,`Tu resultado ${state.ownScore}/5 · esperando al rival (${other.length}/5)`,`Ton score ${state.ownScore}/5 · en attente de l’autre (${other.length}/5)`,`Il tuo punteggio ${state.ownScore}/5 · in attesa dell’avversario (${other.length}/5)`);
+        $('gameResult').classList.add('hidden');
+        if (arcadeInterval) { clearInterval(arcadeInterval); arcadeInterval = null; }
+      }
+      return;
+    }
     const promptLabels = [
       text('Leite den Laser um den mittleren Blocker zum Empfänger', 'Route the laser around the center blocker to the receiver', 'Guía el láser alrededor del bloqueo central hasta el receptor', 'Guide le laser autour du bloc central jusqu’au récepteur', 'Guida il laser intorno all’ostacolo centrale fino al ricevitore'),
       text('Lights Out · schalte das Raster aus', 'Lights Out · clear the grid', 'Lights Out · apaga la cuadrícula', 'Lights Out · éteins la grille', 'Lights Out · spegni la griglia'),

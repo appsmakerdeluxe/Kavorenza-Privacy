@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cargoSortEncode, cargoSortPermutation, echoWaveEncode, echoWaveSequence, mazeCourierCanMove, mazeCourierEncode, mazeCourierOpenMask, mazeCourierPath, NEW_MINIGAMES, NEW_MINIGAME_ECHO_REVEAL_MS, newMiniGameMaxScore, newMiniGameRemainingMs, newMiniGameRoundScore, newMiniGameRoundStartedAtMs, newMiniGameScoreRound, newMiniGameState, newMiniGameTarget, orbitRescueEncode, orbitRescueSequence, pixelForgeTargetMask, prismRelayReachesGoal, prismRelaySolutionMask, switchstormBoardMask, switchstormInitialMask, switchstormSolutionMask, switchstormToggleMask } from '../firebase-public/game-rules.js';
+import { cargoSortEncode, cargoSortPermutation, echoWaveEncode, echoWaveSequence, mazeCourierCanMove, mazeCourierEncode, mazeCourierOpenMask, mazeCourierPath, NEW_MINIGAMES, NEW_MINIGAME_ECHO_REVEAL_MS, newMiniGameMaxScore, newMiniGamePhase, newMiniGameRemainingMs, newMiniGameRoundScore, newMiniGameRoundStartedAtMs, newMiniGameScoreRound, newMiniGameState, newMiniGameTarget, orbitRescueEncode, orbitRescueSequence, pixelForgeTargetMask, prismRelayReachesGoal, prismRelaySolutionMask, switchstormBoardMask, switchstormInitialMask, switchstormSolutionMask, switchstormToggleMask } from '../firebase-public/game-rules.js';
 
 test('Echo Wave uses the same short reveal window as Android', () => {
   assert.equal(NEW_MINIGAME_ECHO_REVEAL_MS, 1800);
@@ -121,6 +121,15 @@ test('ten new mini-games expose distinct catalog entries and bounded determinist
     [3,2,0,2,1],[3,2,4,6,5],[0,3,1,3,2],[0,3,1,3,2],[0,4,1,3,2],
     [0,3,1,3,2],[1,0,2,0,3],[3,2,0,2,1],[1,0,2,0,3],[1,0,2,4,3]
   ]);
+});
+
+test('each custom mini-game leaves input mode after five answers and shows a result only when both players finish', () => {
+  for (const [game] of NEW_MINIGAMES) {
+    assert.equal(newMiniGamePhase({ complete: false }, 4), 'playing', `${game} allows the fifth answer`);
+    assert.equal(newMiniGamePhase({ complete: false }, 5), 'waiting', `${game} waits after its own fifth answer`);
+    assert.equal(newMiniGamePhase({ complete: true }, 5), 'complete', `${game} shows results after both players finish`);
+    assert.equal(newMiniGamePhase({ complete: true }, 6), 'complete', `${game} remains completed after extra stale moves`);
+  }
 });
 
 test('new mini-game reducer replays independent player rounds and timeout misses consistently', () => {

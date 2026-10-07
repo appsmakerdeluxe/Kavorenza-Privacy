@@ -110,6 +110,10 @@ export function newMiniGameMaxScore(game) {
   if (!NEW_MINIGAMES.some(([id]) => id === game)) throw new RangeError('Unknown mini-game');
   return game === 'comet_curling' ? 10 : 5;
 }
+export function newMiniGamePhase(state, ownMoveCount) {
+  if (state?.complete === true) return 'complete';
+  return Number.isInteger(ownMoveCount) && ownMoveCount >= 5 ? 'waiting' : 'playing';
+}
 export function newMiniGameRoundScore(game, answer, target) {
   if (answer == null) return 0;
   const distance = Math.abs(answer - target);

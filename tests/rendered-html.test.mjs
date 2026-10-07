@@ -161,6 +161,19 @@ test("Pixel Forge renders its four-by-four nonogram from row and column clues", 
   assert.match(html, /ROWS \$\{rows\.join\(' · '\)\}\s+\/\s+COLUMNS/);
 });
 
+test("custom mini-game inputs close after the fifth answer and remain closed on the results screen", async () => {
+  const html = await readFile(htmlUrl, "utf8");
+  assert.match(html, /newMiniGamePhase\(state, mine\.length\)/);
+  const phaseIndex = html.indexOf("if (phase !== 'playing')");
+  const firstPuzzleBranch = html.indexOf("if (index === 0)", phaseIndex);
+  assert.ok(phaseIndex >= 0 && firstPuzzleBranch > phaseIndex, "terminal-state guard runs before puzzle controls render");
+  const terminalGuard = html.slice(phaseIndex, firstPuzzleBranch);
+  assert.match(terminalGuard, /\$\('ticBoard'\)\.replaceChildren\(\)/);
+  assert.match(terminalGuard, /phase === 'complete'/);
+  assert.match(terminalGuard, /state\.winnerUid/);
+  assert.doesNotMatch(terminalGuard, /\.onclick\s*=/, "finished or waiting clients receive no move controls");
+});
+
 test("Echo Wave renders an ordered memory sequence with a short reveal and ordered submission", async () => {
   const html = await readFile(htmlUrl, "utf8");
   assert.match(html, /echoWaveSequence\(roomSeed\(\),mine\.length\)/);
