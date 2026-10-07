@@ -31,3 +31,22 @@ test("Firebase-hosted inline module parses and includes no server credential mat
   await transform(html.slice(start + marker.length, end), { loader: "js", target: "es2022" });
   assert.doesNotMatch(html, /BEGIN PRIVATE KEY|service_account|firebase-adminsdk/);
 });
+
+test("Memory renderer streams each revealed card and only the shared resolve hides a mismatch", async () => {
+  const html = await readFile(htmlUrl, "utf8");
+  const start = html.indexOf("renderEmojiMemory = function renderEmojiMemoryV2()");
+  const end = html.indexOf("\n  };", start);
+  assert.ok(start >= 0 && end > start, "active Memory renderer exists");
+  const renderer = html.slice(start, end);
+  assert.match(renderer, /submitMove\('pick',\{value:`card:\$\{index\}`\}\)/);
+  assert.match(renderer, /state\.pending\.length===2/);
+  assert.match(renderer, /submitMove\('pick',\{value:'resolve'\}/);
+  assert.doesNotMatch(renderer, /memoryMismatchTimer===null\?\[\]:state\.visible/);
+});
+
+test("presence and queue heartbeats stay below chatty polling intervals", async () => {
+  const html = await readFile(htmlUrl, "utf8");
+  assert.match(html, /refreshConnectionWarning\(\)\},60000\)/);
+  assert.match(html, /Date\.now\(\)-lastSeen>120000/);
+  assert.match(html, /queueHeartbeatTimer=setInterval\(\(\)=>\{if\(queueSocket\?\.readyState===WebSocket\.OPEN\)queueSocket\.send\('heartbeat'\)\},90000\)/);
+});
