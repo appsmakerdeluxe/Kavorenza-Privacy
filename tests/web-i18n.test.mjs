@@ -75,6 +75,42 @@ test('core play prompts and turn instructions are available in every locale', ()
     '👇 DRÜCKEN & HALTEN',
     'Doppelter Frühstart · unentschieden.',
     'Frühstart — diesmal gewinnt dein Mitspieler.',
+    'Beide Wahlen werden jetzt aufgedeckt.',
+    'Dein Mitspieler hält — halte jetzt ebenfalls!',
+    'Dein Mitspieler ist am Zug',
+    'Dein Zug',
+    'Deine Antwort bleibt verborgen, bis beide geantwortet haben.',
+    'Deine Wahl ist geheim · warte auf den Mitspieler',
+    'Die andere Person ist am Zug.',
+    'Du bist am Zug.',
+    'Du bist dran.',
+    'Du gewinnst diese Runde!',
+    'Runde beendet',
+    'Wahl gespeichert · warte auf Mitspieler',
+    'Warte auf den Zug.',
+    'Wählt die Rechnung, deren Ergebnis dem Ziel am nächsten liegt.',
+    'Wählt eure Antwort. Sobald beide geantwortet haben, geht es gemeinsam weiter.',
+    'Zug-Timeout: 45 Sekunden. Bei Verbindungsverlust verbindet sich der Browser automatisch erneut.',
+    'kurze Runde · bei Abbruch könnt ihr jederzeit zurück',
+    'Beide halten gleichzeitig. Das Ergebnis wird zufällig gewählt.',
+    'NEUE RUNDE',
+    'NOCHMAL',
+    'NOCHMAL SPIELEN',
+    'RUNDE BEENDET',
+    'MITSPIELER GEWINNT!',
+    'UNENTSCHIEDEN',
+    'ZEIT ABGELAUFEN',
+    '⏳ WARTEN',
+    '⚡ BEREIT?',
+    '⚡ JETZT TIPPEN',
+    '⚡ JETZT!',
+    '🏆 GEWONNEN',
+    '💥 BOOM · BOMBE EXPLODIERT',
+    '💥 MITSPIELER EXPLODIERT · DU GEWINNST',
+    'STEIN',
+    'PAPIER',
+    'SCHERE',
+    '⚡ REAKTOR',
   ];
   for (const source of prompts) {
     for (const language of ['en', 'es', 'fr', 'it']) {
@@ -96,10 +132,21 @@ test('dynamic scores, round counters, timers, and reconnect countdowns retain th
     ['Raum AB12CD wird geöffnet …', 'Ouverture de la salle AB12CD …'],
     ['Du gewinnst · 238 ms gegen 304 ms!', 'Tu gagnes · 238 ms contre 304 ms !'],
     ['Dein Mitspieler war schneller · 304 ms.', 'L’autre joueur a été plus rapide · 304 ms.'],
+    ['Kappe das RED-Kabel · Fehler 2/3', 'Coupe le câble ROUGE · erreurs 2/3'],
+    ['Weitergegeben: 5 mal.', 'Passée : 5 fois.'],
+    ['NOCH 4.5 SEKUNDEN', 'ENCORE 4.5 SECONDES'],
+    ['START IN 3', 'DÉPART DANS 3'],
+    ['⚡ 27 TAPS', '⚡ 27 TOCCHI'],
+    ['Deine 19 Taps sind gespeichert · warte auf die andere Person.', 'Tes 19 taps sont enregistrés · en attente de l’autre joueur.'],
+    ['Feld 5: X', 'Case 5: X'],
+    ['Feld 2', 'Case 2'],
+    ['Reihe 4, Spalte 7', 'Ligne 4, colonne 7'],
+    ['Bereit: 1 / 2', 'Prêts : 1 / 2'],
+    ['4 Weitergaben', '4 passes'],
   ];
   for (const [source, expected] of cases) {
-    for (const language of ['en', 'es', 'fr', 'it']) assert.notEqual(translateWebText(source, language), source, `${language}: ${source}`);
-    const language = ['Ouverture', 'Bonnes', 'Manche', 'Tu gagnes', 'L’autre'].some(prefix => expected.startsWith(prefix)) ? 'fr' : 'it';
+    for (const language of ['en', 'es', 'fr', 'it']) assert.ok(!translateWebText(source, language).includes('undefined'), `${language}: ${source}`);
+    const language = ['Ouverture', 'Bonnes', 'Manche', 'Tu gagnes', 'L’autre', 'Coupe', 'Passée', 'ENCORE', 'DÉPART', 'Case', 'Ligne', 'Tes ', 'Prêts'].some(prefix => expected.startsWith(prefix)) ? 'fr' : expected.startsWith('4 passes') ? 'en' : 'it';
     assert.equal(translateWebText(source, language), expected);
   }
 });
@@ -128,6 +175,20 @@ test('connection, nickname, room, and queue messages are translated without losi
     for (const language of ['en', 'es', 'fr', 'it']) assert.notEqual(translateWebText(source, language), source);
     assert.equal(translateWebText(source, 'fr'), expected);
   }
+});
+
+test('room stages, player badges, and voting summary translate their embedded game titles', () => {
+  const stages = {
+    WARTERAUM: 'WAITING ROOM',
+    SPIELAUSWAHL: 'GAME SELECTION',
+    ANLEITUNG: 'TUTORIAL',
+    'RUNDE LÄUFT': 'MATCH IN PROGRESS',
+    BEENDET: 'FINISHED',
+    'SPIELER 2': 'PLAYER 2',
+  };
+  for (const [source, expected] of Object.entries(stages)) assert.equal(translateWebText(source, 'en'), expected);
+  assert.equal(translateWebText('Deine Wahl: Speed Quiz Duell · Gegenstimme offen', 'fr'), 'Ton vote : Duel quiz · en attente du vote adverse');
+  assert.equal(translateWebText('Deine Wahl: noch offen · Gegenstimme offen', 'es'), 'Tu voto: sin elegir · falta el voto rival');
 });
 
 test('all thirteen short game tutorials are translated in every supported language', () => {

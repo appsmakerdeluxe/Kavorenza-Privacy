@@ -93,6 +93,10 @@ const messages = {
   MINT: ["MINZE", "MINT", "MENTA", "MENTHE", "MENTA"],
   AMBER: ["BERNSTEIN", "AMBER", "ÁMBAR", "AMBRE", "AMBRA"],
   VIOLET: ["VIOLETT", "VIOLET", "VIOLETA", "VIOLET", "VIOLA"],
+  RED: ["ROT", "RED", "ROJO", "ROUGE", "ROSSO"],
+  BLUE: ["BLAU", "BLUE", "AZUL", "BLEU", "BLU"],
+  YELLOW: ["GELB", "YELLOW", "AMARILLO", "JAUNE", "GIALLO"],
+  GREEN: ["GRÜN", "GREEN", "VERDE", "VERT", "VERDE"],
   "Tippe auf den Kern, um die Runde zu starten": ["Tippe auf den Kern, um die Runde zu starten", "Tap the core to start the round", "Toca el núcleo para empezar la ronda", "Touchez le noyau pour commencer la manche", "Tocca il nucleo per iniziare il round"],
   "Warte auf das Signal · nicht zu früh tippen!": ["Warte auf das Signal · nicht zu früh tippen!", "Wait for the signal · don't tap early!", "Espera la señal · ¡no toques antes!", "Attendez le signal · ne touchez pas trop tôt !", "Aspetta il segnale · non toccare troppo presto!"],
   "Warte auf das Signal. Ein Tap vor GO zählt als Frühstart.": ["Warte auf das Signal. Ein Tap vor GO zählt als Frühstart.", "Wait for the signal. Tapping before GO counts as a false start.", "Espera la señal. Tocar antes de GO cuenta como salida anticipada.", "Attendez le signal. Toucher avant GO compte comme un faux départ.", "Aspetta il segnale. Toccare prima di VIA vale come falsa partenza."],
@@ -126,6 +130,51 @@ const messages = {
   "Kein freier Raumcode gefunden. Bitte erneut versuchen.": ["Kein freier Raumcode gefunden. Bitte erneut versuchen.", "Could not find an available room code. Please try again.", "No se encontró un código disponible. Inténtalo de nuevo.", "Aucun code de salle disponible. Réessaie.", "Nessun codice stanza disponibile. Riprova."],
   "Nickname konnte nicht reserviert werden.": ["Nickname konnte nicht reserviert werden.", "Could not reserve this nickname.", "No se pudo reservar este apodo.", "Impossible de réserver ce pseudo.", "Impossibile riservare questo nickname."],
   "Spielersuche vorübergehend nicht verfügbar": ["Spielersuche vorübergehend nicht verfügbar", "Matchmaking is temporarily unavailable", "La búsqueda de jugadores no está disponible temporalmente", "La recherche de joueurs est temporairement indisponible", "La ricerca giocatori non è disponibile al momento"],
+  WARTERAUM: ["WARTERAUM", "WAITING ROOM", "SALA DE ESPERA", "SALLE D’ATTENTE", "SALA D’ATTESA"],
+  SPIELAUSWAHL: ["SPIELAUSWAHL", "GAME SELECTION", "SELECCIÓN DE JUEGO", "CHOIX DU JEU", "SCELTA DEL GIOCO"],
+  ANLEITUNG: ["ANLEITUNG", "TUTORIAL", "INSTRUCCIONES", "TUTORIEL", "ISTRUZIONI"],
+  "RUNDE LÄUFT": ["RUNDE LÄUFT", "MATCH IN PROGRESS", "PARTIDA EN CURSO", "MANCHE EN COURS", "PARTITA IN CORSO"],
+  BEENDET: ["BEENDET", "FINISHED", "FINALIZADA", "TERMINÉE", "TERMINATA"],
+  "SPIELER 2": ["SPIELER 2", "PLAYER 2", "JUGADOR 2", "JOUEUR 2", "GIOCATORE 2"],
+  "Spiel läuft": ["Spiel läuft", "Match in progress", "Partida en curso", "Partie en cours", "Partita in corso"],
+  "noch offen": ["noch offen", "not selected", "sin elegir", "pas encore choisi", "non ancora scelto"],
+  "Gegenstimme offen": ["Gegenstimme offen", "waiting for opponent", "falta el voto rival", "en attente du vote adverse", "in attesa del voto avversario"],
+  "Beide Wahlen werden jetzt aufgedeckt.": ["Beide Wahlen werden jetzt aufgedeckt.", "Both choices are revealed now.", "Ahora se revelan ambas elecciones.", "Les deux choix sont révélés.", "Ora vengono rivelate entrambe le scelte."],
+  "Dein Mitspieler hält — halte jetzt ebenfalls!": ["Dein Mitspieler hält — halte jetzt ebenfalls!", "Your opponent is holding — press and hold too!", "La otra persona está pulsando: ¡mantén pulsado también!", "L’autre joueur maintient — maintiens aussi !", "L’altro giocatore tiene premuto: fallo anche tu!"],
+  "Dein Mitspieler ist am Zug": ["Dein Mitspieler ist am Zug", "Your opponent's turn", "Turno de la otra persona", "Au tour de l’autre joueur", "Turno dell’altro giocatore"],
+  "Dein Zug": ["Dein Zug", "Your turn", "Tu turno", "À toi", "Il tuo turno"],
+  "Deine Antwort bleibt verborgen, bis beide geantwortet haben.": ["Deine Antwort bleibt verborgen, bis beide geantwortet haben.", "Your answer stays hidden until both players have answered.", "Tu respuesta permanece oculta hasta que ambos respondan.", "Ta réponse reste cachée jusqu’à ce que les deux joueurs aient répondu.", "La tua risposta resta nascosta finché entrambi non hanno risposto."],
+  "Deine Wahl ist geheim · warte auf den Mitspieler": ["Deine Wahl ist geheim · warte auf den Mitspieler", "Your pick is hidden · waiting for your opponent", "Tu elección está oculta · esperando a la otra persona", "Ton choix est caché · en attente de l’autre joueur", "La tua scelta è nascosta · in attesa dell’altro giocatore"],
+  "Die andere Person ist am Zug.": ["Die andere Person ist am Zug.", "It is the other player's turn.", "Le toca a la otra persona.", "C’est au tour de l’autre joueur.", "È il turno dell’altro giocatore."],
+  "Du bist am Zug.": ["Du bist am Zug.", "It is your turn.", "Te toca a ti.", "C’est ton tour.", "È il tuo turno."],
+  "Du bist dran.": ["Du bist dran.", "Your turn.", "Te toca.", "À toi de jouer.", "Tocca a te."],
+  "Du gewinnst diese Runde!": ["Du gewinnst diese Runde!", "You win this round!", "¡Ganas esta ronda!", "Tu remportes cette manche !", "Hai vinto questo round!"],
+  "Runde beendet": ["Runde beendet", "Round over", "Ronda terminada", "Manche terminée", "Round finito"],
+  "Wahl gespeichert · warte auf Mitspieler": ["Wahl gespeichert · warte auf Mitspieler", "Choice saved · waiting for opponent", "Elección guardada · esperando a la otra persona", "Choix enregistré · en attente de l’autre joueur", "Scelta salvata · in attesa dell’altro giocatore"],
+  "Warte auf den Zug.": ["Warte auf den Zug.", "Waiting for the turn.", "Esperando el turno.", "En attente du tour.", "In attesa del turno."],
+  "Wählt die Rechnung, deren Ergebnis dem Ziel am nächsten liegt.": ["Wählt die Rechnung, deren Ergebnis dem Ziel am nächsten liegt.", "Choose the calculation whose result is closest to the target.", "Elegid la operación cuyo resultado esté más cerca del objetivo.", "Choisissez le calcul dont le résultat est le plus proche de la cible.", "Scegliete il calcolo con il risultato più vicino al bersaglio."],
+  "Wählt eure Antwort. Sobald beide geantwortet haben, geht es gemeinsam weiter.": ["Wählt eure Antwort. Sobald beide geantwortet haben, geht es gemeinsam weiter.", "Choose an answer. The next question starts once both have answered.", "Elegid una respuesta. La siguiente pregunta empieza cuando ambos respondan.", "Choisissez une réponse. La question suivante commence après les deux réponses.", "Scegliete una risposta. Si prosegue quando entrambi hanno risposto."],
+  "Zug-Timeout: 45 Sekunden. Bei Verbindungsverlust verbindet sich der Browser automatisch erneut.": ["Zug-Timeout: 45 Sekunden. Bei Verbindungsverlust verbindet sich der Browser automatisch erneut.", "Turn timeout: 45 seconds. The browser reconnects automatically after a connection loss.", "Límite por turno: 45 segundos. El navegador se reconecta automáticamente si se pierde la conexión.", "Délai par tour : 45 secondes. Le navigateur se reconnecte automatiquement après une coupure.", "Timeout del turno: 45 secondi. Il browser si riconnette automaticamente dopo un’interruzione."],
+  "kurze Runde · bei Abbruch könnt ihr jederzeit zurück": ["kurze Runde · bei Abbruch könnt ihr jederzeit zurück", "Short round · you can leave at any time", "Ronda corta · puedes salir cuando quieras", "Manche courte · vous pouvez quitter à tout moment", "Round breve · puoi uscire in qualsiasi momento"],
+  "DEINE WAHL": ["DEINE WAHL", "YOUR PICK", "TU ELECCIÓN", "TON CHOIX", "LA TUA SCELTA"],
+  "NEUE RUNDE": ["NEUE RUNDE", "NEW ROUND", "NUEVA RONDA", "NOUVELLE MANCHE", "NUOVO ROUND"],
+  NOCHMAL: ["NOCHMAL", "PLAY AGAIN", "OTRA VEZ", "REJOUER", "ANCORA"],
+  "NOCHMAL SPIELEN": ["NOCHMAL SPIELEN", "PLAY AGAIN", "JUGAR OTRA VEZ", "REJOUER", "GIOCA ANCORA"],
+  "RUNDE BEENDET": ["RUNDE BEENDET", "ROUND OVER", "RONDA TERMINADA", "MANCHE TERMINÉE", "ROUND FINITO"],
+  "MITSPIELER GEWINNT!": ["MITSPIELER GEWINNT!", "OPPONENT WINS!", "¡GANA LA OTRA PERSONA!", "L’AUTRE JOUEUR GAGNE !", "VINCE L’ALTRO GIOCATORE!"],
+  UNENTSCHIEDEN: ["UNENTSCHIEDEN", "TIE", "EMPATE", "ÉGALITÉ", "PAREGGIO"],
+  "ZEIT ABGELAUFEN": ["ZEIT ABGELAUFEN", "TIME'S UP", "TIEMPO AGOTADO", "TEMPS ÉCOULÉ", "TEMPO SCADUTO"],
+  "⏳ WARTEN": ["⏳ WARTEN", "⏳ WAIT", "⏳ ESPERA", "⏳ ATTENDS", "⏳ ASPETTA"],
+  "⚡ BEREIT?": ["⚡ BEREIT?", "⚡ READY?", "⚡ ¿LISTO?", "⚡ PRÊT ?", "⚡ PRONTO?"],
+  "⚡ JETZT TIPPEN": ["⚡ JETZT TIPPEN", "⚡ TAP NOW", "⚡ TOCA YA", "⚡ TOUCHEZ MAINTENANT", "⚡ TOCCA ORA"],
+  "⚡ JETZT!": ["⚡ JETZT!", "⚡ NOW!", "⚡ ¡YA!", "⚡ MAINTENANT !", "⚡ ORA!"],
+  "🏆 GEWONNEN": ["🏆 GEWONNEN", "🏆 YOU WON", "🏆 HAS GANADO", "🏆 TU AS GAGNÉ", "🏆 HAI VINTO"],
+  "💥 BOOM · BOMBE EXPLODIERT": ["💥 BOOM · BOMBE EXPLODIERT", "💥 BOOM · BOMB EXPLODED", "💥 ¡BOOM! · BOMBA EXPLOTADA", "💥 BOUM · LA BOMBE A EXPLOSÉ", "💥 BOOM · BOMBA ESPLOSA"],
+  "💥 MITSPIELER EXPLODIERT · DU GEWINNST": ["💥 MITSPIELER EXPLODIERT · DU GEWINNST", "💥 OPPONENT EXPLODED · YOU WIN", "💥 LA OTRA PERSONA EXPLOTÓ · GANAS", "💥 L’AUTRE JOUEUR A EXPLOSÉ · TU GAGNES", "💥 L’ALTRO GIOCATORE È ESPLOSO · HAI VINTO"],
+  STEIN: ["STEIN", "ROCK", "PIEDRA", "PIERRE", "SASSO"],
+  PAPIER: ["PAPIER", "PAPER", "PAPEL", "FEUILLE", "CARTA"],
+  SCHERE: ["SCHERE", "SCISSORS", "TIJERA", "CISEAUX", "FORBICI"],
+  "⚡ REAKTOR": ["⚡ REAKTOR", "⚡ REACTOR", "⚡ REACTOR", "⚡ RÉACTEUR", "⚡ REATTORE"],
   titleTic: ["TIC TAC TOE · NEON", "TIC TAC TOE · NEON", "TRES EN RAYA · NEÓN", "MORPION · NÉON", "TRIS · NEON"],
   titleReflex: ["REFLEX DUEL", "REFLEX DUEL", "DUELO DE REFLEJOS", "DUEL DE RÉFLEXES", "DUELLO DI RIFLESSI"],
   titleConnect: ["VIER GEWINNT · NEON", "CONNECT FOUR · NEON", "CUATRO EN RAYA · NEÓN", "PUISSANCE 4 · NÉON", "FORZA 4 · NEON"],
@@ -164,7 +213,7 @@ const dynamicMessages = [
   [/^Antwort gespeichert · Runde (\d+)\/5$/, ["Antwort gespeichert · Runde {0}/5", "Answer saved · round {0}/5", "Respuesta guardada · ronda {0}/5", "Réponse enregistrée · manche {0}/5", "Risposta salvata · round {0}/5"]],
   [/^Runde (\d+) · Deine Wahl bleibt bis zur Gegenstimme geheim\.$/, ["Runde {0} · Deine Wahl bleibt bis zur Gegenstimme geheim.", "Round {0} · Your pick stays hidden until the other player answers.", "Ronda {0} · Tu elección seguirá oculta hasta que responda la otra persona.", "Manche {0} · Ton choix reste caché jusqu’à la réponse de l’autre joueur.", "Round {0} · La tua scelta resta nascosta finché non risponde l’altro giocatore."]],
   [/^Runde (\d+) · Entscheidet euch unabhängig voneinander\.$/, ["Runde {0} · Entscheidet euch unabhängig voneinander.", "Round {0} · Choose independently.", "Ronda {0} · Elegid por separado.", "Manche {0} · Choisissez chacun de votre côté.", "Round {0} · Scegliete senza influenzarvi."]],
-  [/^Du: ([AB]) · Mitspieler: ([AB])$/, ["Du: {0} · Mitspieler: {1}", "You: {0} · Opponent: {1}", "Tú: {0} · Otra persona: {1}", "Toi : {0} · Autre joueur : {1}", "Tu: {0} · Altro giocatore: {1}"]],
+  [/^Du: (.+) · Mitspieler: (.+)$/, ["Du: {0} · Mitspieler: {1}", "You: {0} · Opponent: {1}", "Tú: {0} · Otra persona: {1}", "Toi : {0} · Autre joueur : {1}", "Tu: {0} · Altro giocatore: {1}"]],
   [/^Richtige Antworten · Du: (\d+)\/5 · Mitspieler: (\d+)\/5$/, ["Richtige Antworten · Du: {0}/5 · Mitspieler: {1}/5", "Correct answers · You: {0}/5 · Opponent: {1}/5", "Aciertos · Tú: {0}/5 · Otra persona: {1}/5", "Bonnes réponses · Toi : {0}/5 · Autre joueur : {1}/5", "Risposte corrette · Tu: {0}/5 · Altro giocatore: {1}/5"]],
   [/^Warte auf Mitspieler · (\d+)\/5$/, ["Warte auf Mitspieler · {0}/5", "Waiting for opponent · {0}/5", "Esperando a la otra persona · {0}/5", "En attente de l’autre joueur · {0}/5", "In attesa dell’altro giocatore · {0}/5"]],
   [/^Deine Punkte: (\d+) · Mitspieler: (\d+)$/, ["Deine Punkte: {0} · Mitspieler: {1}", "Your points: {0} · Opponent: {1}", "Tus puntos: {0} · Otra persona: {1}", "Tes points : {0} · Autre joueur : {1}", "I tuoi punti: {0} · Altro giocatore: {1}"]],
@@ -177,6 +226,21 @@ const dynamicMessages = [
   [/^Du gewinnst · (\d+) ms gegen (\d+) ms!$/, ["Du gewinnst · {0} ms gegen {1} ms!", "You win · {0} ms vs {1} ms!", "¡Ganas! · {0} ms frente a {1} ms", "Tu gagnes · {0} ms contre {1} ms !", "Hai vinto · {0} ms contro {1} ms!"]],
   [/^Du gewinnst · (\d+) ms!$/, ["Du gewinnst · {0} ms!", "You win · {0} ms!", "¡Ganas! · {0} ms", "Tu gagnes · {0} ms !", "Hai vinto · {0} ms!"]],
   [/^Dein Mitspieler war schneller · (\d+) ms\.$/, ["Dein Mitspieler war schneller · {0} ms.", "Your opponent was faster · {0} ms.", "La otra persona fue más rápida · {0} ms.", "L’autre joueur a été plus rapide · {0} ms.", "L’altro giocatore è stato più veloce · {0} ms."]],
+  [/^Dein Mitspieler war schneller\.$/, ["Dein Mitspieler war schneller.", "Your opponent was faster.", "La otra persona fue más rápida.", "L’autre joueur a été plus rapide.", "L’altro giocatore è stato più veloce."]],
+  [/^Kappe das (RED|BLUE|YELLOW|GREEN)-Kabel · Fehler (\d+)\/3$/, ["Kappe das {0}-Kabel · Fehler {1}/3", "Cut the {0} wire · mistakes {1}/3", "Corta el cable {0} · errores {1}/3", "Coupe le câble {0} · erreurs {1}/3", "Taglia il cavo {0} · errori {1}/3"]],
+  [/^Weitergegeben: (\d+) mal\.$/, ["Weitergegeben: {0} mal.", "Passed: {0} times.", "Pasada: {0} veces.", "Passée : {0} fois.", "Passata: {0} volte."]],
+  [/^NOCH (\d+(?:\.\d+)?) SEKUNDEN$/, ["NOCH {0} SEKUNDEN", "{0} SECONDS LEFT", "QUEDAN {0} SEGUNDOS", "ENCORE {0} SECONDES", "ANCORA {0} SECONDI"]],
+  [/^START IN (\d+)$/, ["START IN {0}", "STARTS IN {0}", "EMPIEZA EN {0}", "DÉPART DANS {0}", "INIZIA TRA {0}"]],
+  [/^Start (\d+) s$/, ["Start {0} s", "Starting in {0}s", "Empieza en {0} s", "Départ dans {0} s", "Si parte tra {0} s"]],
+  [/^⚡ (\d+) TAPS$/, ["⚡ {0} TAPS", "⚡ {0} TAPS", "⚡ {0} TOQUES", "⚡ {0} TAPS", "⚡ {0} TOCCHI"]],
+  [/^Deine (\d+) Taps sind gespeichert · warte auf die andere Person\.$/, ["Deine {0} Taps sind gespeichert · warte auf die andere Person.", "Your {0} taps are saved · waiting for the other player.", "Tus {0} toques están guardados · esperando a la otra persona.", "Tes {0} taps sont enregistrés · en attente de l’autre joueur.", "I tuoi {0} tocchi sono salvati · in attesa dell’altro giocatore."]],
+  [/^Feld (\d+)(?:: ([XO]))?$/, ["Feld {0}{1}", "Cell {0}{1}", "Casilla {0}{1}", "Case {0}{1}", "Casella {0}{1}"]],
+  [/^Reihe (\d+), Spalte (\d+)$/, ["Reihe {0}, Spalte {1}", "Row {0}, column {1}", "Fila {0}, columna {1}", "Ligne {0}, colonne {1}", "Riga {0}, colonna {1}"]],
+  [/^Bereit: (\d+) \/ 2$/, ["Bereit: {0} / 2", "Ready: {0} / 2", "Listos: {0} / 2", "Prêts : {0} / 2", "Pronti: {0} / 2"]],
+  [/^(\d+) Weitergaben$/, ["{0} Weitergaben", "{0} passes", "{0} pases", "{0} passes", "{0} passaggi"]],
+];
+const voteSummaryMessages = [
+  "Deine Wahl: {0} · {1}", "Your vote: {0} · {1}", "Tu voto: {0} · {1}", "Ton vote : {0} · {1}", "Il tuo voto: {0} · {1}",
 ];
 
 export function normalizeWebLanguage(value) {
@@ -205,10 +269,21 @@ export function translateWebText(text, language) {
     return `${source.slice(0, source.indexOf(source.trim()))}${translatedPrefix}${translatedGame}`;
   }
   if (!key) {
+    const vote = source.trim().match(/^Deine Wahl: (.+) · (.+)$/);
+    if (vote) {
+      const translated = voteSummaryMessages[index].replace("{0}", translateWebText(vote[1], lang)).replace("{1}", translateWebText(vote[2], lang));
+      const startVote = source.indexOf(source.trim());
+      return `${source.slice(0, startVote)}${translated}${source.slice(startVote + source.trim().length)}`;
+    }
     const dynamic = dynamicMessages.find(([pattern]) => pattern.test(source.trim()));
     if (!dynamic) return text;
     const match = source.trim().match(dynamic[0]);
-    const translatedDynamic = dynamic[1][index].replace(/\{(\d+)\}/g, (_, slot) => match[Number(slot) + 1]);
+    const translatedDynamic = dynamic[1][index].replace(/\{(\d+)\}/g, (_, slot) => {
+      const value = match[Number(slot) + 1] ?? "";
+      if (dynamic[0].source.startsWith("^Kappe das")) return messages[value]?.[index] ?? translateWebText(value, lang);
+      if (dynamic[0].source.startsWith("^Feld") && slot === "1" && value) return `: ${value}`;
+      return value;
+    });
     const trimmedDynamic = source.trim();
     const startDynamic = source.indexOf(trimmedDynamic);
     return `${source.slice(0, startDynamic)}${translatedDynamic}${source.slice(startDynamic + trimmedDynamic.length)}`;
