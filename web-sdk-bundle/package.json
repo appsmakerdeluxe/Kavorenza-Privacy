@@ -1,0 +1,17 @@
+{
+  "name": "kavorenza-firebase-web-sdk-bundle",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "firebase": "12.19.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.27.3"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.5"
+  }
+}

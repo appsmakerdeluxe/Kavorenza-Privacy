@@ -13,6 +13,7 @@ const eslintConfig = defineConfig([
     "dist/**",
     "out/**",
     "build/**",
+    "firebase-public/firebase-sdk.bundle.js",
     "next-env.d.ts",
   ]),
   eslint.configs.recommended,

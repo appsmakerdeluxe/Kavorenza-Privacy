@@ -4,6 +4,7 @@ import test from "node:test";
 import { transform } from "esbuild";
 
 const htmlUrl = new URL("../firebase-public/index.html", import.meta.url);
+const firebaseBundleUrl = new URL("../firebase-public/firebase-sdk.bundle.js", import.meta.url);
 
 test("Firebase-hosted player page exposes a complete two-player cross-platform flow", async () => {
   const html = await readFile(htmlUrl, "utf8");
@@ -12,7 +13,9 @@ test("Firebase-hosted player page exposes a complete two-player cross-platform f
   }
   assert.match(html, /Firebase Anonymous Auth/);
   assert.match(html, /maxPlayers:2/);
-  assert.match(html, /onAuthStateChanged/);
+  assert.match(html, /auth\.authStateReady\(\)/);
+  assert.match(html, /kavorenza\/auth-timeout/);
+  assert.match(html, /authRetryBtn/);
   assert.match(html, /beforeunload/);
   for (const game of ["tic_tac_toe", "reflex", "connect_four", "code_breaker", "rock_paper", "number_target", "color_rush", "word_sprint", "emoji_memory", "cyber_tap", "bomb_party", "chooser", "would_you_rather"]) {
     assert.ok(html.includes(`'${game}'`), `missing browser game ${game}`);
@@ -20,6 +23,17 @@ test("Firebase-hosted player page exposes a complete two-player cross-platform f
   assert.match(html, /MATCHMAKER_URL/);
   assert.match(html, /position.*queueSize/);
   assert.match(html, /queueApi\('cancel'/);
+});
+
+test("Firebase browser SDK is bundled locally and sign-in cannot remain silently pending", async () => {
+  const html = await readFile(htmlUrl, "utf8");
+  const bundle = await readFile(firebaseBundleUrl, "utf8");
+  assert.match(html, /firebase-sdk\.bundle\.js/);
+  assert.doesNotMatch(html, /https:\/\/www\.gstatic\.com\/firebasejs/);
+  assert.match(html, /15000/);
+  for (const exportedApi of ["initializeApp", "getAuth", "signInAnonymously", "getFirestore", "runTransaction", "onSnapshot"]) {
+    assert.ok(bundle.includes(exportedApi), `Firebase SDK bundle is missing ${exportedApi}`);
+  }
 });
 
 test("Firebase-hosted inline module parses and includes no server credential material", async () => {

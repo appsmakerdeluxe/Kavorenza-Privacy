@@ -232,6 +232,8 @@ const messages = {
   connectionPreparing: ["Verbindung wird wiederhergestellt …", "Reconnecting …", "Reconectando …", "Reconnexion …", "Riconnessione …"],
   authReady: ["Anonym verbunden · kostenlos spielbar", "Connected anonymously · free to play", "Conectado anónimamente · gratis", "Connecté anonymement · gratuit", "Connesso in modo anonimo · gratuito"],
   authFailed: ["Anmeldung fehlgeschlagen", "Sign-in failed", "Error al iniciar sesión", "Échec de la connexion", "Accesso non riuscito"],
+  authSlow: ["Die Verbindung dauert zu lange. Prüfe dein Internet und verbinde dich erneut.", "The connection is taking too long. Check your internet and retry.", "La conexión tarda demasiado. Comprueba internet e inténtalo de nuevo.", "La connexion prend trop de temps. Vérifie Internet et réessaie.", "La connessione richiede troppo tempo. Controlla Internet e riprova."],
+  authRetry: ["NEU VERBINDEN", "RECONNECT", "VOLVER A CONECTAR", "SE RECONNECTER", "RICONNETTI"],
   gameNotReady: ["Dieses Spiel ist noch nicht für den Browser umgesetzt.", "This game is not available in the browser yet.", "Este juego aún no está disponible en el navegador.", "Ce jeu n’est pas encore disponible dans le navigateur.", "Questo gioco non è ancora disponibile nel browser."],
   shareCopied: ["LINK KOPIERT", "LINK COPIED", "ENLACE COPIADO", "LIEN COPIÉ", "LINK COPIATO"],
   queueWaitingTitle: ["Du bist in der Warteschlange", "You’re in the queue", "Estás en la cola", "Tu es dans la file d’attente", "Sei in coda"],
@@ -359,7 +361,8 @@ export function installWebLocalization(documentRef, select, storage, browserLang
       if (node.hasAttribute(attribute)) {
         const sourceAttribute = `data-i18n-source-${attribute}`;
         if (!node.hasAttribute(sourceAttribute)) node.setAttribute(sourceAttribute, node.getAttribute(attribute));
-        node.setAttribute(attribute, translateWebText(node.getAttribute(sourceAttribute), language));
+        const translated = translateWebText(node.getAttribute(sourceAttribute), language);
+        if (node.getAttribute(attribute) !== translated) node.setAttribute(attribute, translated);
       }
     }
     for (const child of node.childNodes) localizeNode(child);

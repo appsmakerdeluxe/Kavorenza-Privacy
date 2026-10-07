@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { initialWebLanguage, normalizeWebLanguage, translateWebText } from '../firebase-public/web-i18n.js';
+import { initialWebLanguage, installWebLocalization, normalizeWebLanguage, translateWebText } from '../firebase-public/web-i18n.js';
 import { quizQuestions } from '../firebase-public/quiz-data.js';
 
 test('browser language preference is saved first, then follows the device across supported locales', () => {
@@ -26,6 +26,57 @@ test('shared room and readiness copy is available in all five web languages', ()
       assert.notEqual(translateWebText('VERSTANDEN · ICH BIN BEREIT', language), 'VERSTANDEN · ICH BIN BEREIT');
       assert.notEqual(translateWebText('ERNEUT VERBINDEN', language), 'ERNEUT VERBINDEN');
     }
+  }
+});
+
+test('Firebase sign-in delay and retry messages are available in all supported languages', () => {
+  const timeoutCopy = 'Die Verbindung dauert zu lange. Prüfe dein Internet und verbinde dich erneut.';
+  const retryCopy = 'NEU VERBINDEN';
+  assert.equal(translateWebText(timeoutCopy, 'de'), timeoutCopy);
+  assert.equal(translateWebText(retryCopy, 'de'), retryCopy);
+  for (const language of ['de', 'en', 'es', 'fr', 'it']) {
+    const timeoutText = translateWebText(timeoutCopy, language);
+    const retryText = translateWebText(retryCopy, language);
+    assert.ok(timeoutText.length > 15, `${language} timeout copy`);
+    assert.ok(retryText.length > 5, `${language} retry copy`);
+    if (language !== 'de') {
+      assert.notEqual(timeoutText, timeoutCopy, `${language} timeout copy`);
+      assert.notEqual(retryText, retryCopy, `${language} retry copy`);
+    }
+  }
+});
+
+test('attribute localization is idempotent and does not feed its own mutation observer', () => {
+  const previousObserver = globalThis.MutationObserver;
+  const observers = [];
+  globalThis.MutationObserver = class {
+    constructor(callback) { this.callback = callback; observers.push(this); }
+    observe() {}
+    disconnect() {}
+  };
+  const attributes = new Map([['placeholder', 'Dein Nickname']]);
+  let attributeWrites = 0;
+  const input = {
+    nodeType: 1,
+    childNodes: [],
+    hasAttribute: name => attributes.has(name),
+    getAttribute: name => attributes.get(name) ?? null,
+    setAttribute: (name, value) => { attributeWrites++; attributes.set(name, value); },
+  };
+  const body = { nodeType: 1, childNodes: [input], hasAttribute: () => false, getAttribute: () => null, setAttribute() {} };
+  const documentRef = { body, documentElement: {}, title: 'Kavorenza' };
+  const select = { addEventListener() {}, value: '' };
+  const values = new Map([['kavorenza_language', 'en']]);
+  const storage = { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) };
+  try {
+    installWebLocalization(documentRef, select, storage, ['en-US']);
+    assert.equal(input.getAttribute('placeholder'), 'Your nickname');
+    const writesAfterInitialTranslation = attributeWrites;
+    observers.at(-1).callback([{ type: 'attributes', target: input }]);
+    assert.equal(attributeWrites, writesAfterInitialTranslation, 'observer pass must not rewrite an already translated attribute');
+  } finally {
+    if (previousObserver === undefined) delete globalThis.MutationObserver;
+    else globalThis.MutationObserver = previousObserver;
   }
 });
 
