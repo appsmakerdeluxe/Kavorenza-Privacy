@@ -51,6 +51,28 @@ test('text translations preserve surrounding whitespace and unknown dynamic copy
   assert.equal(translateWebText('unmapped dynamic error', 'es'), 'unmapped dynamic error');
 });
 
+test('core play prompts and turn instructions are available in every locale', () => {
+  const prompts = [
+    'Tippe auf den Kern, um die Runde zu starten',
+    'Warte auf das Signal · nicht zu früh tippen!',
+    'Warte auf das Signal. Ein Tap vor GO zählt als Frühstart.',
+    'Eine Person startet das Signal. Tippt danach schneller als die andere.',
+    'Tippe im grünen Zeitfenster so oft wie möglich.',
+    'Tippt im kurzen Reactor-Countdown so schnell wie möglich.',
+    'Wählt gleichzeitig geheim Stein, Papier oder Schere.',
+    'Wählt gleichzeitig. Die Wahl bleibt geheim, bis beide bestätigt haben.',
+    'Wählt geheim A oder B',
+    'Halte gedrückt, bis beide bereit sind.',
+    'Der andere Spieler hält — halte jetzt ebenfalls!',
+    'Bereite dich darauf vor, die Bombe zu übernehmen.',
+  ];
+  for (const source of prompts) {
+    for (const language of ['en', 'es', 'fr', 'it']) {
+      assert.notEqual(translateWebText(source, language), source, `${language} translation missing: ${source}`);
+    }
+  }
+});
+
 test('all thirteen short game tutorials are translated in every supported language', () => {
   const tutorials = [
     'Platziert X und O abwechselnd. Wer zuerst drei Zeichen in einer Reihe hat, gewinnt.',
