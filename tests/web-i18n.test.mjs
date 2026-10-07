@@ -217,6 +217,32 @@ test('connection, nickname, room, and queue messages are translated without losi
   }
 });
 
+test('live queue and mini-game result statuses stay localized while values remain intact', () => {
+  const cases = [
+    ['Du bist in der Warteschlange', 'You’re in the queue'],
+    ['Warteposition wird ermittelt …', 'Finding your place in the queue …'],
+    ['Geschätzte Zeit wird nach einigen abgeschlossenen Partien angezeigt. Aktualisierung etwa alle 15 Sekunden.', 'An estimate will appear after a few matches finish. Updates about every 15 seconds.'],
+    ['Spieler gefunden!', 'Player found!'],
+    ['Gemeinsamer Raum wird vorbereitet …', 'Preparing your shared room …'],
+    ['Du kannst die Suche jederzeit abbrechen.', 'You can cancel the search at any time.'],
+    ['Spielersuche beendet', 'Player search ended'],
+    ['Deine Warteschlangen-Sitzung ist nicht mehr aktiv.', 'Your queue session is no longer active.'],
+    ['Spielersuche gerade nicht erreichbar. Deine Position wird nicht behauptet.', 'Player search is temporarily unavailable. No queue position is being claimed.'],
+    ['Unentschieden!', 'It’s a tie!'],
+    ['Wählt gleichzeitig.', 'Choose at the same time.'],
+    ['15 Sekunden pro Rätsel · 5 Rätsel', '15 seconds per puzzle · 5 puzzles'],
+    ['Bereit: 1 / 2', 'Ready: 1 / 2'],
+    ['RÄTSEL 3/5 · 9s', 'PUZZLE 3/5 · 9s'],
+    ['Du 4/5 · Mitspieler 2/5', 'You 4/5 · Opponent 2/5'],
+  ];
+  for (const [source, english] of cases) {
+    assert.equal(translateWebText(source, 'en'), english, source);
+    for (const language of ['es', 'fr', 'it']) {
+      assert.notEqual(translateWebText(source, language), source, `${language}: ${source}`);
+    }
+  }
+});
+
 test('room stages, player badges, and voting summary translate their embedded game titles', () => {
   const stages = {
     WARTERAUM: 'WAITING ROOM',

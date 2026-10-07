@@ -234,12 +234,27 @@ const messages = {
   authFailed: ["Anmeldung fehlgeschlagen", "Sign-in failed", "Error al iniciar sesión", "Échec de la connexion", "Accesso non riuscito"],
   gameNotReady: ["Dieses Spiel ist noch nicht für den Browser umgesetzt.", "This game is not available in the browser yet.", "Este juego aún no está disponible en el navegador.", "Ce jeu n’est pas encore disponible dans le navigateur.", "Questo gioco non è ancora disponibile nel browser."],
   shareCopied: ["LINK KOPIERT", "LINK COPIED", "ENLACE COPIADO", "LIEN COPIÉ", "LINK COPIATO"],
+  queueWaitingTitle: ["Du bist in der Warteschlange", "You’re in the queue", "Estás en la cola", "Tu es dans la file d’attente", "Sei in coda"],
+  queuePositionPending: ["Warteposition wird ermittelt …", "Finding your place in the queue …", "Buscando tu lugar en la cola …", "Recherche de ta place dans la file …", "Ricerca della posizione in coda …"],
+  queueEtaPending: ["Geschätzte Zeit wird nach einigen abgeschlossenen Partien angezeigt. Aktualisierung etwa alle 15 Sekunden.", "An estimate will appear after a few matches finish. Updates about every 15 seconds.", "La estimación aparecerá cuando terminen algunas partidas. Se actualiza cada 15 segundos.", "Une estimation apparaîtra après quelques parties terminées. Mise à jour toutes les 15 secondes.", "La stima apparirà dopo alcune partite concluse. Aggiornamento ogni 15 secondi."],
+  queueMatched: ["Spieler gefunden!", "Player found!", "¡Jugador encontrado!", "Joueur trouvé !", "Giocatore trovato!"],
+  roomPreparing: ["Gemeinsamer Raum wird vorbereitet …", "Preparing your shared room …", "Preparando la sala compartida …", "Préparation de la salle commune …", "Preparazione della stanza condivisa …"],
+  cancelSearchHint: ["Du kannst die Suche jederzeit abbrechen.", "You can cancel the search at any time.", "Puedes cancelar la búsqueda cuando quieras.", "Tu peux annuler la recherche à tout moment.", "Puoi annullare la ricerca in qualsiasi momento."],
+  queueEnded: ["Spielersuche beendet", "Player search ended", "Búsqueda de jugador finalizada", "Recherche de joueur terminée", "Ricerca giocatore terminata"],
+  queueSessionExpired: ["Deine Warteschlangen-Sitzung ist nicht mehr aktiv.", "Your queue session is no longer active.", "Tu sesión de cola ya no está activa.", "Ta session dans la file n’est plus active.", "La tua sessione in coda non è più attiva."],
+  queueUnavailableNoPosition: ["Spielersuche gerade nicht erreichbar. Deine Position wird nicht behauptet.", "Player search is temporarily unavailable. No queue position is being claimed.", "La búsqueda no está disponible temporalmente. No se afirma ninguna posición en la cola.", "La recherche est temporairement indisponible. Aucune position n’est annoncée.", "La ricerca è temporaneamente non disponibile. Non viene indicata alcuna posizione."],
+  tieExclamation: ["Unentschieden!", "It’s a tie!", "¡Empate!", "Égalité !", "Pareggio!"],
+  simultaneous: ["Wählt gleichzeitig.", "Choose at the same time.", "Elegid al mismo tiempo.", "Choisissez en même temps.", "Scegliete nello stesso momento."],
 };
 
 const languageCodes = ["de", "en", "es", "fr", "it"];
 const sourceToKey = new Map(Object.entries(messages).map(([key, values]) => [values[0], key]));
 const dynamicMessages = [
   [/^DU BIST DRAN · (\d+) s$/, ["DU BIST DRAN · {0} s", "YOUR TURN · {0}s", "TE TOCA · {0} s", "À TOI · {0} s", "TOCCA A TE · {0} s"]],
+  [/^Bereit: (\d+) \/ 2$/, ["Bereit: {0} / 2", "Ready: {0} / 2", "Listos: {0} / 2", "Prêts : {0} / 2", "Pronti: {0} / 2"]],
+  [/^15 Sekunden pro Rätsel · 5 Rätsel$/, ["15 Sekunden pro Rätsel · 5 Rätsel", "15 seconds per puzzle · 5 puzzles", "15 segundos por reto · 5 retos", "15 secondes par défi · 5 défis", "15 secondi per enigma · 5 enigmi"]],
+  [/^RÄTSEL (\d+)\/5 · (\d+)s$/, ["RÄTSEL {0}/5 · {1}s", "PUZZLE {0}/5 · {1}s", "RETO {0}/5 · {1}s", "DÉFI {0}/5 · {1}s", "ENIGMA {0}/5 · {1}s"]],
+  [/^Du (\d+)\/5 · Mitspieler (\d+)\/5$/, ["Du {0}/5 · Mitspieler {1}/5", "You {0}/5 · Opponent {1}/5", "Tú {0}/5 · Rival {1}/5", "Toi {0}/5 · Autre joueur {1}/5", "Tu {0}/5 · Avversario {1}/5"]],
   [/^Mitspieler ist dran · (\d+) s$/, ["Mitspieler ist dran · {0} s", "OPPONENT'S TURN · {0}s", "TURNO DE LA OTRA PERSONA · {0} s", "TOUR DE L’AUTRE JOUEUR · {0} s", "TURNO DELL’ALTRO GIOCATORE · {0} s"]],
   [/^Deine Paare: (\d+) · Mitspieler: (\d+)$/, ["Deine Paare: {0} · Mitspieler: {1}", "Your pairs: {0} · Opponent: {1}", "Tus parejas: {0} · Otra persona: {1}", "Tes paires : {0} · Autre joueur : {1}", "Le tue coppie: {0} · Altro giocatore: {1}"]],
   [/^FRAGE (\d+)\/5 · (\d+) s$/, ["FRAGE {0}/5 · {1} s", "QUESTION {0}/5 · {1}s", "PREGUNTA {0}/5 · {1} s", "QUESTION {0}/5 · {1} s", "DOMANDA {0}/5 · {1} s"]],
