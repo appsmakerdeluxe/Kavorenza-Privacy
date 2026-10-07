@@ -65,11 +65,68 @@ test('core play prompts and turn instructions are available in every locale', ()
     'Halte gedrückt, bis beide bereit sind.',
     'Der andere Spieler hält — halte jetzt ebenfalls!',
     'Bereite dich darauf vor, die Bombe zu übernehmen.',
+    'Beide halten gleichzeitig. Das Ergebnis wird zufällig gewählt.',
+    'Wähle geheim',
+    'NÄCHSTES DILEMMA',
+    'WARTE AUF NÄCHSTE RUNDE',
+    '⏳ MITSPIELER ENTSCHÄRFT',
+    '⚡ DU WURDEST AUSGEWÄHLT!',
+    '⚡ MITSPIELER AUSGEWÄHLT!',
+    '👇 DRÜCKEN & HALTEN',
+    'Doppelter Frühstart · unentschieden.',
+    'Frühstart — diesmal gewinnt dein Mitspieler.',
   ];
   for (const source of prompts) {
     for (const language of ['en', 'es', 'fr', 'it']) {
       assert.notEqual(translateWebText(source, language), source, `${language} translation missing: ${source}`);
     }
+  }
+});
+
+test('dynamic scores, round counters, timers, and reconnect countdowns retain their values across locales', () => {
+  const cases = [
+    ['DU BIST DRAN · 12 s', 'TOCCA A TE · 12 s'],
+    ['Mitspieler ist dran · 7 s', 'TURNO DELL’ALTRO GIOCATORE · 7 s'],
+    ['Deine Paare: 3 · Mitspieler: 2', 'Le tue coppie: 3 · Altro giocatore: 2'],
+    ['FRAGE 4/5 · 9 s', 'DOMANDA 4/5 · 9 s'],
+    ['Antwort gespeichert · warte auf Mitspieler · Frage 2/5', 'Risposta salvata · in attesa dell’altro giocatore · domanda 2/5'],
+    ['Runde 3 · Entscheidet euch unabhängig voneinander.', 'Manche 3 · Choisissez chacun de votre côté.'],
+    ['Richtige Antworten · Du: 4/5 · Mitspieler: 3/5', 'Bonnes réponses · Toi : 4/5 · Autre joueur : 3/5'],
+    ['Der andere Spieler verbindet sich neu · 18 s', 'L’altro giocatore si sta riconnettendo · 18 s'],
+    ['Raum AB12CD wird geöffnet …', 'Ouverture de la salle AB12CD …'],
+    ['Du gewinnst · 238 ms gegen 304 ms!', 'Tu gagnes · 238 ms contre 304 ms !'],
+    ['Dein Mitspieler war schneller · 304 ms.', 'L’autre joueur a été plus rapide · 304 ms.'],
+  ];
+  for (const [source, expected] of cases) {
+    for (const language of ['en', 'es', 'fr', 'it']) assert.notEqual(translateWebText(source, language), source, `${language}: ${source}`);
+    const language = ['Ouverture', 'Bonnes', 'Manche', 'Tu gagnes', 'L’autre'].some(prefix => expected.startsWith(prefix)) ? 'fr' : 'it';
+    assert.equal(translateWebText(source, language), expected);
+  }
+});
+
+test('connection, nickname, room, and queue messages are translated without losing user values', () => {
+  const dynamic = [
+    ['Dieser Nickname war schon vergeben. Du spielst als „Luna 2“.', 'Ce pseudo était déjà pris. Tu joues sous le nom « Luna 2 ».'],
+    ['Alex ist seit über zwei Minuten nicht erreichbar. Warte auf die Rückkehr oder brich die Sitzung ab.', 'Alex est injoignable depuis plus de deux minutes. Attends son retour ou annule la session.'],
+    ['Warteplatz 3 von 12', 'Position 3 sur 12 dans la file'],
+    ['Geschätzte Wartezeit: etwa 2 min 30 s · ungefähr alle 15 Sekunden aktualisiert', 'Attente estimée : environ 2 min 30 s · mise à jour toutes les 15 secondes'],
+  ];
+  for (const source of [
+    'Der Raum wurde beendet oder ist abgelaufen.',
+    'Deine Internetverbindung ist unterbrochen. Verbinde dich erneut oder verlasse die Sitzung.',
+    'Raum nicht gefunden. Prüfe den Code und versuche es erneut.',
+    'Bitte einen sechsstelligen Raumcode eingeben.',
+    'Raum ist nicht mehr offen.',
+    'Raum ist voll (maximal 2 Spieler).',
+    'Kein freier Raumcode gefunden. Bitte erneut versuchen.',
+    'Nickname konnte nicht reserviert werden.',
+    'Spielersuche vorübergehend nicht verfügbar',
+  ]) {
+    for (const language of ['en', 'es', 'fr', 'it']) assert.notEqual(translateWebText(source, language), source);
+  }
+  for (const [source, expected] of dynamic) {
+    for (const language of ['en', 'es', 'fr', 'it']) assert.notEqual(translateWebText(source, language), source);
+    assert.equal(translateWebText(source, 'fr'), expected);
   }
 });
 
