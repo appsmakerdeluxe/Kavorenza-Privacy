@@ -3,6 +3,18 @@ import { DILEMMA_TRANSLATIONS } from './dilemma-translations.js';
 
 export const MEMORY_TURN_TIMEOUT_SECONDS = 15;
 export const NEW_MINIGAME_ECHO_REVEAL_MS = 1_800;
+export const NEW_MINIGAME_ROUND_TIMEOUT_MS = 15_000;
+export function newMiniGameRoundStartedAtMs(ownMoves, matchStartedAt, nowMs = Date.now()) {
+  const latest = ownMoves.at(-1)?.createdAt;
+  const lastMoveAt = latest?.toMillis?.() ?? Number(latest);
+  const matchAt = matchStartedAt?.toMillis?.() ?? Number(matchStartedAt);
+  return Number.isFinite(lastMoveAt) && lastMoveAt > 0 ? lastMoveAt
+    : Number.isFinite(matchAt) && matchAt > 0 ? matchAt
+      : nowMs;
+}
+export function newMiniGameRemainingMs(startedAtMs, nowMs = Date.now()) {
+  return Math.max(0, NEW_MINIGAME_ROUND_TIMEOUT_MS - Math.max(0, nowMs - startedAtMs));
+}
 export function switchstormToggleMask(mask, cell) {
   if (!Number.isInteger(cell) || cell < 0 || cell > 8) throw new RangeError('Switchstorm cell must be 0..8');
   const row = Math.floor(cell / 3), column = cell % 3;

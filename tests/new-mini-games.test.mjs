@@ -1,9 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { cargoSortEncode, cargoSortPermutation, echoWaveEncode, echoWaveSequence, mazeCourierCanMove, mazeCourierEncode, mazeCourierOpenMask, mazeCourierPath, NEW_MINIGAMES, NEW_MINIGAME_ECHO_REVEAL_MS, newMiniGameMaxScore, newMiniGameRoundScore, newMiniGameScoreRound, newMiniGameState, newMiniGameTarget, orbitRescueEncode, orbitRescueSequence, pixelForgeTargetMask, prismRelayReachesGoal, prismRelaySolutionMask, switchstormBoardMask, switchstormInitialMask, switchstormSolutionMask, switchstormToggleMask } from '../firebase-public/game-rules.js';
+import { cargoSortEncode, cargoSortPermutation, echoWaveEncode, echoWaveSequence, mazeCourierCanMove, mazeCourierEncode, mazeCourierOpenMask, mazeCourierPath, NEW_MINIGAMES, NEW_MINIGAME_ECHO_REVEAL_MS, newMiniGameMaxScore, newMiniGameRemainingMs, newMiniGameRoundScore, newMiniGameRoundStartedAtMs, newMiniGameScoreRound, newMiniGameState, newMiniGameTarget, orbitRescueEncode, orbitRescueSequence, pixelForgeTargetMask, prismRelayReachesGoal, prismRelaySolutionMask, switchstormBoardMask, switchstormInitialMask, switchstormSolutionMask, switchstormToggleMask } from '../firebase-public/game-rules.js';
 
 test('Echo Wave uses the same short reveal window as Android', () => {
   assert.equal(NEW_MINIGAME_ECHO_REVEAL_MS, 1800);
+});
+
+test('new-game timeout resumes from the latest own move after a page refresh', () => {
+  const matchStartedAt = 100_000;
+  const ownMoves = [{ createdAt: 105_000 }, { createdAt: 120_000 }];
+  const start = newMiniGameRoundStartedAtMs(ownMoves, matchStartedAt, 200_000);
+  assert.equal(start, 120_000);
+  assert.equal(newMiniGameRemainingMs(start, 125_000), 10_000);
+  assert.equal(newMiniGameRemainingMs(start, 134_001), 999);
+  assert.equal(newMiniGameRemainingMs(start, 135_000), 0);
+  assert.equal(newMiniGameRoundStartedAtMs([], matchStartedAt, 200_000), matchStartedAt);
+  assert.equal(newMiniGameRoundStartedAtMs([], null, 200_000), 200_000);
+  assert.equal(newMiniGameRoundStartedAtMs([{ createdAt: { toMillis: () => 123_000 } }], matchStartedAt, 200_000), 123_000);
 });
 
 test('Prism Relay ray-traces four rotatable mirrors around a seeded center blocker', () => {
