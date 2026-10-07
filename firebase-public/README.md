@@ -1,6 +1,6 @@
-# Kavorenza browser player
+# Kavorenza browser test client
 
-This Firebase Hosting page is the browser client for Kavorenza. It can create or join a two-player room and play the same 23-game catalog as the Android client. Web and Android clients share room state and moves through Firestore.
+This is a local-only browser test client for development and multiplayer/interface checks. It is not a public way to play Kavorenza and must not be deployed to Firebase Hosting. The Firebase Hosting site serves only the public privacy policy; the test client is excluded from that deployment.
 
 ## Current scope
 
@@ -15,15 +15,11 @@ This Firebase Hosting page is the browser client for Kavorenza. It can create or
 
 The Firebase Web API key in the client configuration is a public app identifier, not an Admin/service-account credential. Never put a Firebase Admin key, Play key, keystore, or password in this folder. Firestore access is controlled by the deployed Security Rules.
 
-## Local preview and deploy
+## Local preview only
 
-Use the repository's `firebase.json` and `.firebaserc`; serve this directory locally, then verify create/join, game proposal, both tutorial confirmations, representative game moves, refresh recovery, and reconnect before deployment. The offline Node tests cover reducers for all 23 games, cross-player state agreement, new-game mechanics, Memory timeout/reveal behavior, and room cleanup. A passing reducer test does not replace a live two-client Firestore test. Deploy the Hosting target with:
+Run the browser client locally for targeted checks. Use two browser contexts to exercise room creation/join, game proposal, readiness, representative moves, refresh recovery, and reconnect. The offline Node tests cover reducers for all 23 games, cross-player state agreement, new-game mechanics, Memory timeout/reveal behavior, and room cleanup. A passing reducer test does not replace a live two-client Firestore test.
 
-```powershell
-firebase deploy --only hosting --project kavorenza-1
-```
-
-The deployed address is `https://kavorenza-1.web.app/`. Keep the Firebase project on the no-cost Spark plan; do not link a Cloud Billing account or enable Blaze. Hosting has project-level no-cost quotas, so monitor usage and pause deploys if limits are reached rather than upgrading.
+Never publish `firebase-public/` to Hosting. The live Firebase Hosting address is reserved for public privacy-policy documents, not game access. Keep Firebase on the no-cost Spark plan; do not link a Cloud Billing account or enable Blaze.
 
 For an explicit live backend smoke test, run `node scripts/live-firestore-two-player-smoke.mjs` from the repository root. It creates two anonymous test users and one uniquely named room, tests room join/readiness/move-write/read access for every game ID, and attempts to remove the temporary room and accounts in `finally`. It uses only the public web API configuration and short-lived ID tokens in process memory; it never reads or needs a service-account key. Do not run repeatedly in a loop because anonymous sign-in has Firebase quota limits. The test checks Firestore security-rule and shared-history behavior; it is not a visual UI test or a substitute for Android device QA.
 

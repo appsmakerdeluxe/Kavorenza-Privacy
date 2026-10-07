@@ -1,7 +1,14 @@
 {
   "hosting": {
-    "public": "firebase-public",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [{ "source": "**", "destination": "/index.html" }]
+    "public": "docs",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "test-player.html",
+      "join/**",
+      "audio/**",
+      "music-credits.md"
+    ]
   }
 }
