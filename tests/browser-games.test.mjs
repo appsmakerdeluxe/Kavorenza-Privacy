@@ -18,6 +18,20 @@ test('room-seeded round generation matches Android golden vectors', () => {
   assert.deepEqual(emojiMemoryBoard(2048), ['🌟', '💎', '🔥', '👾', '👾', '🚀', '💎', '🌟', '🔥', '⚡', '🚀', '⚡']);
 });
 
+test('Color Rush and Word Sprint preserve seeded answer identity across all five languages', () => {
+  const baseColors = colorRushRounds(true, 2048, 'de');
+  const baseWords = wordSprintRounds(true, 2048, 'de');
+  for (const language of ['en', 'es', 'fr', 'it']) {
+    const colors = colorRushRounds(true, 2048, language);
+    const words = wordSprintRounds(true, 2048, language);
+    assert.deepEqual(colors.map(round => round[1]), baseColors.map(round => round[1]));
+    assert.deepEqual(words.map(([prompt, options]) => options.indexOf(prompt)), baseWords.map(([prompt, options]) => options.indexOf(prompt)));
+    for (const [prompt, options] of words) assert.ok(options.includes(prompt), `${language}: ${prompt} is an answer option`);
+    assert.notDeepEqual(colors.map(round => round[0]), baseColors.map(round => round[0]));
+    assert.notDeepEqual(words.map(round => round[0]), baseWords.map(round => round[0]));
+  }
+});
+
 test('Speed Quiz uses Android question order, hides picks, scores answers and resets', () => {
   const questions = quizQuestions(2048);
   assert.deepEqual(questions.map(question => question.prompt), [

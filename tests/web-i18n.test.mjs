@@ -42,6 +42,8 @@ test('game catalogue names and descriptions have five-language variants', () => 
   }
   assert.equal(translateWebText('TIC TAC TOE · NEON', 'fr'), 'MORPION · NÉON');
   assert.equal(translateWebText('So spielt ihr Vier Gewinnt', 'it'), 'Come si gioca a Forza 4');
+  assert.equal(translateWebText('Tippt die passende Farbe innerhalb des Zeitlimits.', 'fr'), 'Touchez la couleur correspondante avant la fin du chrono.');
+  assert.equal(translateWebText('MINZE', 'it'), 'MENTA');
 });
 
 test('text translations preserve surrounding whitespace and unknown dynamic copy safely', () => {

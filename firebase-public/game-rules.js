@@ -80,18 +80,29 @@ export function numberTargetPuzzle(seed, round) {
   return { target, options, bestExpression: best.expression };
 }
 
-export function colorRushRounds(isGerman, seed) {
-  const labels = isGerman
+export function colorRushRounds(isGerman, seed, language = getWebLanguage()) {
+  const labels = ({
+    de: ['CYAN TIPPEN', 'PINK TIPPEN', 'MINZE TIPPEN', 'BERNSTEIN TIPPEN', 'VIOLETT TIPPEN'],
+    en: ['TAP CYAN', 'TAP PINK', 'TAP MINT', 'TAP AMBER', 'TAP VIOLET'],
+    es: ['TOCA CIAN', 'TOCA ROSA', 'TOCA MENTA', 'TOCA ÁMBAR', 'TOCA VIOLETA'],
+    fr: ['TOUCHE CYAN', 'TOUCHE ROSE', 'TOUCHE MENTHE', 'TOUCHE AMBRE', 'TOUCHE VIOLET'],
+    it: ['TOCCA CIANO', 'TOCCA ROSA', 'TOCCA MENTA', 'TOCCA AMBRA', 'TOCCA VIOLA'],
+  })[language] || (isGerman
     ? ['CYAN TIPPEN', 'PINK TIPPEN', 'MINZE TIPPEN', 'BERNSTEIN TIPPEN', 'VIOLETT TIPPEN']
-    : ['TAP CYAN', 'TAP PINK', 'TAP MINT', 'TAP AMBER', 'TAP VIOLET'];
+    : ['TAP CYAN', 'TAP PINK', 'TAP MINT', 'TAP AMBER', 'TAP VIOLET']);
   const colors = ['CYAN', 'PINK', 'MINT', 'AMBER', 'VIOLET'];
   return seededIndices(seed, 5, labels.length).map(index => [labels[index], colors[index]]);
 }
 
-export function wordSprintRounds(isGerman, seed) {
-  const rounds = isGerman
-    ? [['NACHT', ['NACHT', 'LICHT', 'RAUM', 'DUELL']], ['BLITZ', ['DONNER', 'BLITZ', 'REGEN', 'SONNE']], ['STERN', ['MOND', 'STERN', 'SONNE', 'PLANET']], ['FEUER', ['WASSER', 'FEUER', 'ERDE', 'LUFT']], ['SIEG', ['SPIEL', 'RUNDE', 'SIEG', 'PUNKT']]]
-    : [['NIGHT', ['NIGHT', 'LIGHT', 'SPACE', 'DUEL']], ['FLASH', ['THUNDER', 'FLASH', 'RAIN', 'SOLAR']], ['STAR', ['MOON', 'STAR', 'SUN', 'PLANET']], ['FIRE', ['WATER', 'FIRE', 'EARTH', 'WIND']], ['VICTORY', ['MATCH', 'ROUND', 'VICTORY', 'POINT']]];
+export function wordSprintRounds(isGerman, seed, language = getWebLanguage()) {
+  const roundsByLanguage = {
+    de: [['NACHT', ['NACHT', 'LICHT', 'RAUM', 'DUELL']], ['BLITZ', ['DONNER', 'BLITZ', 'REGEN', 'SONNE']], ['STERN', ['MOND', 'STERN', 'SONNE', 'PLANET']], ['FEUER', ['WASSER', 'FEUER', 'ERDE', 'LUFT']], ['SIEG', ['SPIEL', 'RUNDE', 'SIEG', 'PUNKT']]],
+    en: [['NIGHT', ['NIGHT', 'LIGHT', 'SPACE', 'DUEL']], ['FLASH', ['THUNDER', 'FLASH', 'RAIN', 'SOLAR']], ['STAR', ['MOON', 'STAR', 'SUN', 'PLANET']], ['FIRE', ['WATER', 'FIRE', 'EARTH', 'WIND']], ['VICTORY', ['MATCH', 'ROUND', 'VICTORY', 'POINT']]],
+    es: [['NOCHE', ['NOCHE', 'LUZ', 'ESPACIO', 'DUELO']], ['RAYO', ['TRUENO', 'RAYO', 'LLUVIA', 'SOL']], ['ESTRELLA', ['LUNA', 'ESTRELLA', 'SOL', 'PLANETA']], ['FUEGO', ['AGUA', 'FUEGO', 'TIERRA', 'AIRE']], ['VICTORIA', ['PARTIDA', 'RONDA', 'VICTORIA', 'PUNTO']]],
+    fr: [['NUIT', ['NUIT', 'LUMIÈRE', 'ESPACE', 'DUEL']], ['ÉCLAIR', ['TONNERRE', 'ÉCLAIR', 'PLUIE', 'SOLEIL']], ['ÉTOILE', ['LUNE', 'ÉTOILE', 'SOLEIL', 'PLANÈTE']], ['FEU', ['EAU', 'FEU', 'TERRE', 'AIR']], ['VICTOIRE', ['MATCH', 'MANCHE', 'VICTOIRE', 'POINT']]],
+    it: [['NOTTE', ['NOTTE', 'LUCE', 'SPAZIO', 'DUELLO']], ['LAMPO', ['TUONO', 'LAMPO', 'PIOGGIA', 'SOLE']], ['STELLA', ['LUNA', 'STELLA', 'SOLE', 'PIANETA']], ['FUOCO', ['ACQUA', 'FUOCO', 'TERRA', 'ARIA']], ['VITTORIA', ['PARTITA', 'ROUND', 'VITTORIA', 'PUNTO']]],
+  };
+  const rounds = roundsByLanguage[language] || (isGerman ? roundsByLanguage.de : roundsByLanguage.en);
   return seededShuffle(rounds, seed);
 }
 
