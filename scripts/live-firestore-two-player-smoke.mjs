@@ -38,6 +38,7 @@ const accounts = [];
 let apiKey;
 let roomId;
 let roomCode;
+let roomCreated = false;
 
 async function request(url, { token, method = 'GET', body } = {}) {
   const response = await fetch(url, {
@@ -122,7 +123,7 @@ async function startMatch(host, guest, game) {
 
 async function cleanup() {
   const [host] = accounts;
-  if (roomId && host) try {
+  if (roomCreated && host) try {
     await update(host.token, `rooms/${roomId}`, {
       status: 'finished',
       playerCount: 0,
@@ -180,6 +181,7 @@ try {
     }),
     createWrite(`roomCodes/${roomCode}`, { roomId, hostUid: host.uid, expiresAt }),
   ]);
+  roomCreated = true;
 
   await commit(guest.token, [
     createWrite(`rooms/${roomId}/players/${guest.uid}`, {
