@@ -28,9 +28,10 @@
     .rpsChoice.loser{opacity:.62;filter:saturate(.6)}
     @keyframes win-pulse{to{filter:brightness(1.5);transform:scale(1.05)}}
   </style>
+  <style>.languageRow{display:flex;justify-content:space-between;align-items:center;gap:12px}.languageRow .brand{min-width:0}.languagePicker{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.8rem;font-weight:700}.languagePicker select{max-width:150px;padding:8px 30px 8px 10px;border-radius:12px;background:#11152d;border:1px solid var(--line);color:white;font:inherit}</style>
 </head>
 <body><main>
-  <div class="brand">KAVORENZA · MINI-GAMES ZU ZWEIT</div>
+  <div class="languageRow"><div class="brand">KAVORENZA · MINI-GAMES ZU ZWEIT</div><label class="languagePicker"><span>Sprache</span><select id="languageSelect" aria-label="Sprache"><option value="de">Deutsch</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="it">Italiano</option></select></label></div>
   <section id="home">
     <header class="hero"><div class="eyebrow">DEIN RAUM. DEINE RUNDE.</div><h1>Eine Person fehlt noch.</h1><p class="muted">Kostenlos anonym spielen. Raum erstellen oder Code eingeben, gemeinsam wählen und erst starten, wenn beide bereit sind.</p></header>
     <section class="card notice"><strong>2 Spieler pro Raum</strong><p class="muted">Keine E-Mail, Telefonnummer oder Standortdaten erforderlich. Bei einer Aktualisierung fragen wir vor dem Verlassen einer laufenden Runde.</p></section>
@@ -51,6 +52,7 @@
 <audio id="gameMusic" loop preload="none"></audio>
 <script type="module">
   import { MAX_QUEUE_RECONNECT_ATTEMPTS, queueRetryDelay } from './queue-retry.js';
+  import { installWebLocalization } from './web-i18n.js';
   import { arcadeRunState, bombPartyState, chooserState, colorRushRounds, connectFourState, cyberTapState, dilemmaState, emojiMemoryState, MEMORY_TURN_TIMEOUT_SECONDS, numberTargetPuzzle, reflexState, rockPaperState, ticTacToeState, wordSprintRounds } from './game-rules.js';
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
   import { quizDuelState } from './quiz-data.js';
@@ -62,6 +64,7 @@
   import { getFirestore, doc, collection, getDoc, getDocs, runTransaction, writeBatch, serverTimestamp, Timestamp, onSnapshot, setDoc, addDoc, query, orderBy, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';
   const firebaseConfig={apiKey:'AIzaSyAacrkBDJsiU9BmQMQ4bl8Zqje-C76fZEg',authDomain:'kavorenza-1.firebaseapp.com',projectId:'kavorenza-1',messagingSenderId:'874214450116'};
   const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app),$=id=>document.getElementById(id);
+  installWebLocalization(document,$('languageSelect'),localStorage,navigator.languages?.length?navigator.languages:[navigator.language]);
   let musicEnabled=localStorage.getItem('kavorenza_music_enabled')!=='false',sfxEnabled=localStorage.getItem('kavorenza_sfx_enabled')!=='false',musicMatchId='',lastMusicIndex=-1,musicAutoplayBlocked=false,sfxContext=null,lastGameFeedback='';
   function updateAudioControls(){const music=$('musicToggle'),effects=$('sfxToggle');if(music){music.textContent=musicAutoplayBlocked?'♫ Musik starten':musicEnabled?'♫ Musik aus':'♫ Musik an';music.setAttribute('aria-pressed',String(musicEnabled))}if(effects){effects.textContent=sfxEnabled?'♪ Effekte aus':'♪ Effekte an';effects.setAttribute('aria-pressed',String(sfxEnabled))}}
   function playBrowserSfx(kind='tap'){if(!sfxEnabled)return;const AudioContextClass=window.AudioContext||window.webkitAudioContext;if(!AudioContextClass)return;try{sfxContext??=new AudioContextClass();if(sfxContext.state==='suspended')sfxContext.resume().catch(()=>{});const oscillator=sfxContext.createOscillator(),gain=sfxContext.createGain(),now=sfxContext.currentTime;oscillator.type='sine';oscillator.frequency.setValueAtTime(kind==='win'?740:kind==='error'?210:430,now);oscillator.frequency.exponentialRampToValueAtTime(kind==='win'?980:kind==='error'?150:570,now+.09);gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(kind==='win'?.12:.055,now+.012);gain.gain.exponentialRampToValueAtTime(.0001,now+.12);oscillator.connect(gain);gain.connect(sfxContext.destination);oscillator.start(now);oscillator.stop(now+.13)}catch{}}

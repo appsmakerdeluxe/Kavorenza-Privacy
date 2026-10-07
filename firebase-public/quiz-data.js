@@ -1,4 +1,6 @@
 import { seededShuffle } from './game-rules.js';
+import { QUIZ_TRANSLATIONS } from './quiz-translations.js';
+import { getWebLanguage } from './web-i18n.js';
 
 // Source: original German question bank in Android I18n.getTriviaQuestions.
 // Keep source order and the correct answer index aligned with the Android bank.
@@ -50,16 +52,22 @@ const QUESTIONS = [
   ["Welcher Planet ist der Sonne am nächsten?", ["Venus", "Merkur", "Erde"], 1],
 ];
 
-export const quizQuestions = seed => seededShuffle(QUESTIONS, seed).slice(0, 5)
-  .map(([prompt, options, correctIndex]) => ({ prompt, options, correctIndex }));
+export const quizQuestions = (seed, language = getWebLanguage()) => seededShuffle(
+  QUESTIONS.map((question, sourceIndex) => ({ question, sourceIndex })), seed
+).slice(0, 5).map(({ question: [prompt, options, correctIndex], sourceIndex }) => {
+  const localized = QUIZ_TRANSLATIONS[language]?.[sourceIndex];
+  return localized
+    ? { prompt: localized.prompt, options: localized.options, correctIndex }
+    : { prompt, options, correctIndex };
+});
 
-export function quizDuelState(moves, matchId, localUid, seed) {
+export function quizDuelState(moves, matchId, localUid, seed, language = getWebLanguage()) {
   const scoped = moves.filter(move => move.game === 'code_breaker' && move.matchId === matchId);
   const resetIndex = scoped.findLastIndex(move => move.type === 'reset');
   const answers = scoped.slice(resetIndex + 1).filter(move => move.type === 'answer');
   const own = answers.filter(move => move.playerUid === localUid);
   const other = answers.filter(move => move.playerUid !== localUid);
-  const questions = quizQuestions(seed);
+  const questions = quizQuestions(seed, language);
   const questionIndex = Math.min(own.length, other.length, questions.length);
   const score = list => list.reduce((total, move, index) => total + (Number(move.payload?.answerIndex) === questions[index]?.correctIndex ? 1 : 0), 0);
   return {

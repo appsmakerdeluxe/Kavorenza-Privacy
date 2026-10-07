@@ -32,6 +32,17 @@ test("Firebase-hosted inline module parses and includes no server credential mat
   assert.doesNotMatch(html, /BEGIN PRIVATE KEY|service_account|firebase-adminsdk/);
 });
 
+test("browser page includes a persistent five-language picker and runtime translator", async () => {
+  const html = await readFile(htmlUrl, "utf8");
+  const translator = await readFile(new URL("../firebase-public/web-i18n.js", import.meta.url), "utf8");
+  for (const language of ["de", "en", "es", "fr", "it"]) {
+    assert.match(html, new RegExp(`<option value="${language}">`));
+  }
+  assert.match(html, /installWebLocalization\(document/);
+  assert.match(translator, /kavorenza_language/);
+  assert.match(translator, /new MutationObserver/);
+});
+
 test("Memory renderer streams each revealed card and only the shared resolve hides a mismatch", async () => {
   const html = await readFile(htmlUrl, "utf8");
   const start = html.indexOf("renderEmojiMemory = function renderEmojiMemoryV2()");
