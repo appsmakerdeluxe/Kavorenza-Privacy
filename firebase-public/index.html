@@ -104,4 +104,43 @@
   $('shareBtn').onclick=async()=>{const url=new URL(location.href);url.searchParams.set('room',room?.roomCode||'');const payload={title:'Kavorenza-Spielraum',text:`Komm in meinen Kavorenza-Spielraum: ${room?.roomCode||''}`,url:url.toString()};try{if(navigator.share)await navigator.share(payload);else{await navigator.clipboard.writeText(payload.url);$('shareBtn').textContent='LINK KOPIERT'}}catch(e){if(e.name!=='AbortError')showConnection(e)}};
   $('newRoundBtn').disabled=true;
   window.addEventListener('beforeunload',e=>{if(roomId&&!unloading){e.preventDefault();e.returnValue=''} });
+  renderEmojiMemory = function renderEmojiMemoryV2(){
+    arcadeActiveGame='emoji_memory';
+    const opponentUid=players.find(player=>player.uid!==room.hostUid)?.uid;
+    const currentMatchId=room.matchId;
+    const state=emojiMemoryState(moves,room.matchId,room.roomCode,room.hostUid,opponentUid,uid);
+    const roundKey=`${room.matchId}|emoji_memory`;
+    if(roundKey!==arcadeKey){arcadeKey=roundKey;memorySelection=[];memoryPickBusy=false;memoryPendingValue='';memoryHiddenMoveId=''}
+    const acknowledged=memoryPendingValue&&state.picks.some(move=>move.playerUid===uid&&move.payload?.value===memoryPendingValue);
+    if(acknowledged){if(memoryPendingValue==='resolve'||memoryPendingValue.startsWith('TIMEOUT'))memorySelection=[];memoryPendingValue='';memoryPickBusy=false}
+    if(memoryPendingValue.startsWith('TIMEOUT:')&&memoryPendingValue!==`TIMEOUT:${state.nextPlayerUid}`){memoryPendingValue='';memoryPickBusy=false}
+    const active=state.nextPlayerUid===uid;
+    const latest=state.picks.at(-1);
+    const start=state.turnStartedAt||timestampMs(room.lastActivityAt)||Date.now();
+    const left=Math.max(0,MEMORY_TURN_TIMEOUT_SECONDS-Math.floor((Date.now()-start)/1000));
+    $('gameName').textContent='EMOJI MEMORY';
+    $('gameState').textContent=state.complete?(state.ownPairs===state.otherPairs?'Unentschieden':state.ownPairs>state.otherPairs?'Du gewinnst!':'Dein Mitspieler gewinnt.'):active?`DU BIST DRAN · ${left} s`:`Mitspieler ist dran · ${left} s`;
+    $('gameMessage').textContent=`Deine Paare: ${state.ownPairs} · Mitspieler: ${state.otherPairs}`;
+    $('turnTimer').textContent=state.complete?'':`${left} s`;
+    $('ticBoard').className='board';$('newRoundBtn').textContent='NEUE RUNDE';$('newRoundBtn').disabled=!state.complete;$('newRoundBtn').onclick=()=>submitMove('reset');hide('gameResult');
+    if(state.complete){$('ticBoard').replaceChildren();if(arcadeInterval){clearInterval(arcadeInterval);arcadeInterval=null}return}
+    const legacyMismatch=state.pending.length===0&&state.visible.length===2&&state.board[state.visible[0]]!==state.board[state.visible[1]];
+    if(legacyMismatch&&memoryHiddenMoveId!==latest?.id){clearTimeout(memoryMismatchTimer);memoryHiddenMoveId=latest?.id;memoryMismatchTimer=setTimeout(()=>{memoryMismatchTimer=null;renderEmojiMemory()},1500)}
+    const visible=new Set([...state.matched,...(legacyMismatch&&memoryHiddenMoveId===latest?.id&&memoryMismatchTimer===null?[]:state.visible),...memorySelection]);
+    if(state.pending.length===2&&latest?.playerUid===uid&&memoryHiddenMoveId!==latest.id){clearTimeout(memoryMismatchTimer);memoryHiddenMoveId=latest.id;memoryMismatchTimer=setTimeout(()=>{memoryMismatchTimer=null;if(room?.matchId===currentMatchId&&room?.currentGame==='emoji_memory')submitMove('pick',{value:'resolve'},'emoji_memory').then(ok=>{if(!ok)memoryHiddenMoveId=''})},1500)}
+    const cards=state.board.map((emoji,index)=>{
+      const button=document.createElement('button');button.className='cell';button.style.aspectRatio='auto';button.style.minHeight='72px';button.textContent=visible.has(index)?emoji:'?';
+      button.disabled=!active||memoryPickBusy||state.pending.length>=2||(legacyMismatch&&memoryMismatchTimer!==null)||state.matched.includes(index)||state.pending.includes(index)||memorySelection.includes(index);
+      button.onclick=()=>{if(!active||memoryPickBusy||state.pending.length>=2)return;memorySelection=[...memorySelection,index];memoryPickBusy=true;memoryPendingValue=`card:${index}`;renderEmojiMemory();submitMove('pick',{value:`card:${index}`}).then(ok=>{if(!ok&&memoryPendingValue===`card:${index}`){memoryPendingValue='';memoryPickBusy=false;memorySelection=[];renderEmojiMemory()}})};
+      return button;
+    });
+    $('ticBoard').replaceChildren(...cards);
+    if(!arcadeInterval)arcadeInterval=setInterval(()=>{
+      if(room?.status!=='playing'||room.currentGame!=='emoji_memory'){clearInterval(arcadeInterval);arcadeInterval=null;return}
+      const current=emojiMemoryState(moves,room.matchId,room.roomCode,room.hostUid,players.find(player=>player.uid!==room.hostUid)?.uid,uid);
+      const began=current.turnStartedAt||timestampMs(room.lastActivityAt)||Date.now();
+      const remaining=Math.max(0,MEMORY_TURN_TIMEOUT_SECONDS-Math.floor((Date.now()-began)/1000));$('turnTimer').textContent=`${remaining} s`;
+      if(remaining===0&&current.nextPlayerUid===uid&&!memoryPickBusy){const value=`TIMEOUT:${current.nextPlayerUid}`;memoryPickBusy=true;memoryPendingValue=value;submitMove('pick',{value}).then(ok=>{if(!ok&&memoryPendingValue===value){memoryPickBusy=false;memoryPendingValue=''}})}
+    },500);
+  };
 </script></body></html>

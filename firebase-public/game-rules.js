@@ -110,34 +110,57 @@ export function emojiMemoryState(moves, matchId, roomCode, hostUid, guestUid, lo
   const matched = new Set();
   let nextPlayerUid = hostUid;
   let visible = [];
+  let pending = [];
+  let pendingPlayerUid = null;
   let turns = 0;
+  let turnNumber = 0;
+  let turnStartedAt = null;
   let hostPairs = 0, guestPairs = 0;
+  const eventTime = pick => pick.createdAt?.toMillis?.() || Number(pick.createdAt) || null;
+  const passTurn = pick => { nextPlayerUid = nextPlayerUid === hostUid ? guestUid : hostUid; visible = []; pending = []; pendingPlayerUid = null; turnNumber++; turnStartedAt = eventTime(pick) || turnStartedAt; };
+  const reveal = (uid, index) => {
+    if (uid !== nextPlayerUid || pending.length >= 2 || !Number.isInteger(index) || index < 0 || index >= board.length || matched.has(index) || pending.includes(index)) return false;
+    pending = [...pending, index]; visible = pending; pendingPlayerUid = uid; return true;
+  };
+  const resolve = pick => {
+    if (pending.length !== 2) return;
+    turns++;
+    const scorer = pendingPlayerUid;
+    if (board[pending[0]] === board[pending[1]]) {
+      pending.forEach(index => matched.add(index));
+      if (scorer === hostUid) hostPairs++; else guestPairs++;
+      pending = []; visible = []; pendingPlayerUid = null; turnNumber++; turnStartedAt = eventTime(pick) || turnStartedAt;
+    } else passTurn(pick);
+  };
   for (const pick of picks) {
     const value = pick.payload?.value || '';
     if (value === 'TIMEOUT' && pick.playerUid === nextPlayerUid) {
-      nextPlayerUid = nextPlayerUid === hostUid ? guestUid : hostUid;
-      visible = [];
+      passTurn(pick);
       continue;
     }
     if (value.startsWith('TIMEOUT:')) {
       if (value.slice('TIMEOUT:'.length) !== nextPlayerUid || ![hostUid, guestUid].includes(pick.playerUid)) continue;
-      nextPlayerUid = nextPlayerUid === hostUid ? guestUid : hostUid;
-      visible = [];
+      passTurn(pick);
       continue;
     }
-    if (pick.playerUid !== nextPlayerUid) continue;
-    const cells = value.replace(/^pair:/, '').split(',').map(Number);
-    if (cells.length !== 2 || cells.some(index => !Number.isInteger(index) || index < 0 || index >= board.length || matched.has(index)) || cells[0] === cells[1]) continue;
-    turns++;
-    visible = cells;
-    if (board[cells[0]] === board[cells[1]]) {
-      cells.forEach(index => matched.add(index));
-      if (pick.playerUid === hostUid) hostPairs++; else guestPairs++;
-    } else nextPlayerUid = nextPlayerUid === hostUid ? guestUid : hostUid;
+    if (value === 'resolve') { resolve(pick); continue; }
+    if (value.startsWith('card:')) { reveal(pick.playerUid, Number(value.slice(5))); continue; }
+    // Read old pair events while Android/browser clients roll forward.
+    if (value.startsWith('pair:') && pick.playerUid === nextPlayerUid) {
+      const cells = value.slice(5).split(',').map(Number);
+      if (cells.length === 2 && cells[0] !== cells[1] && cells.every(index => Number.isInteger(index) && index >= 0 && index < board.length && !matched.has(index))) {
+        turns++; visible = cells;
+        if (board[cells[0]] === board[cells[1]]) {
+          cells.forEach(index => matched.add(index));
+          if (pick.playerUid === hostUid) hostPairs++; else guestPairs++;
+        } else nextPlayerUid = nextPlayerUid === hostUid ? guestUid : hostUid;
+        turnNumber++; turnStartedAt = eventTime(pick) || turnStartedAt;
+      }
+    }
   }
   const ownPairs = localUid === hostUid ? hostPairs : guestPairs;
   const otherPairs = localUid === hostUid ? guestPairs : hostPairs;
-  return { board, picks, matched: [...matched], visible, nextPlayerUid, ownPairs, otherPairs, turns, complete: matched.size === 12 || turns >= 24 };
+  return { board, picks, matched: [...matched], visible, pending, pendingPlayerUid, nextPlayerUid, ownPairs, otherPairs, turns, turnNumber, turnStartedAt, complete: matched.size === 12 || turns >= 24 };
 }
 
 function kotlinStringHash(value) {

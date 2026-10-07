@@ -203,6 +203,26 @@ test('Emoji Memory follows Android match-retain, mismatch-switch, timeout and co
   assert.equal(emojiMemoryState(Array.from({ length: 6 }, (_, index) => pair('host', ...[[0, 5], [1, 10], [2, 8], [3, 4], [6, 7], [9, 11]][index])), matchId, 'KAVO', 'host', 'guest', 'host').complete, true);
 });
 
+test('Emoji Memory shares every flipped card and keeps a mismatch visible until resolve', () => {
+  const card = (id, uid, index, createdAt) => ({ ...move('emoji_memory', uid, 'pick', { value: `card:${index}` }), id, createdAt });
+  const first = card('first', 'host', 0, 1_000);
+  const one = emojiMemoryState([first], matchId, 'KAVO', 'host', 'guest', 'guest');
+  assert.deepEqual(one.visible, [0]);
+  assert.equal(one.nextPlayerUid, 'host');
+  assert.equal(one.turnNumber, 0);
+  const second = card('second', 'host', 1, 2_000);
+  const revealed = emojiMemoryState([first, second], matchId, 'KAVO', 'host', 'guest', 'guest');
+  assert.deepEqual(revealed.visible, [0, 1]);
+  assert.equal(revealed.nextPlayerUid, 'host');
+  assert.equal(revealed.turnNumber, 0);
+  assert.equal(revealed.turnStartedAt, null);
+  const resolved = emojiMemoryState([first, second, { ...move('emoji_memory', 'host', 'pick', { value: 'resolve' }), id: 'resolve', createdAt: 3_500 }], matchId, 'KAVO', 'host', 'guest', 'guest');
+  assert.deepEqual(resolved.visible, []);
+  assert.equal(resolved.nextPlayerUid, 'guest');
+  assert.equal(resolved.turnNumber, 1);
+  assert.equal(resolved.turnStartedAt, 3_500);
+});
+
 test('Emoji Memory ignores forged out-of-turn, duplicate-card and already-matched picks', () => {
   const pair = (uid, value) => move('emoji_memory', uid, 'pick', { value });
   const moves = [
