@@ -221,6 +221,9 @@ test('Emoji Memory shares every flipped card and keeps a mismatch visible until 
   assert.equal(resolved.nextPlayerUid, 'guest');
   assert.equal(resolved.turnNumber, 1);
   assert.equal(resolved.turnStartedAt, 3_500);
+  const recovered = emojiMemoryState([first, second, { ...move('emoji_memory', 'guest', 'pick', { value: 'resolve' }), id: 'guest-resolve', createdAt: 3_500 }], matchId, 'KAVO', 'host', 'guest', 'guest');
+  assert.equal(recovered.nextPlayerUid, 'guest');
+  assert.deepEqual(recovered.visible, []);
 });
 
 test('Emoji Memory ignores forged out-of-turn, duplicate-card and already-matched picks', () => {
