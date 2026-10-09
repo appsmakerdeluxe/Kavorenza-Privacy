@@ -53,7 +53,7 @@
       document.getElementById("code").textContent = code;
       document.getElementById("code").hidden = false;
       document.getElementById("fallback").style.display = "block";
-      const appUrl = `kavorenza://join?room=${encodeURIComponent(code)}`;
+      const appUrl = `intent://join?room=${encodeURIComponent(code)}#Intent;scheme=kavorenza;package=de.appsmakerdeluxe.Kavorenza;end`;
       document.getElementById("open-app").href = appUrl;
       window.setTimeout(() => { window.location.href = appUrl; }, 250);
     })();
