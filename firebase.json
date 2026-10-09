@@ -6,7 +6,6 @@
       "**/.*",
       "**/node_modules/**",
       "test-player.html",
-      "join/**",
       "audio/**",
       "music-credits.md"
     ]
