@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Öffne eine Kavorenza-Spieleinladung in der Android-App.">
+  <title>Kavorenza – Spieleinladung</title>
+  <style>
+    :root{color-scheme:dark;--ink:#090a1a;--text:#f8f8ff;--muted:#c1c3dd;--cyan:#06b6d4;--violet:#8b5cf6}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 85% 5%,#38206d 0,transparent 26rem),radial-gradient(circle at 0 95%,#063d4a 0,transparent 28rem),var(--ink);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+    main{width:min(100%,520px);padding:30px;background:#ffffff10;border:1px solid #ffffff24;border-radius:28px;box-shadow:0 24px 80px #0007;text-align:center}.brand{color:#67e8f9;font-size:.82rem;font-weight:850;letter-spacing:.2em}h1{margin:14px 0 8px;font-size:clamp(1.8rem,8vw,2.5rem);line-height:1.1}p{color:var(--muted);margin:10px 0 20px}.code{display:inline-block;margin:2px 0 22px;padding:8px 18px;border:1px solid #8b5cf677;border-radius:14px;background:#8b5cf622;font-size:1.55rem;font-weight:850;letter-spacing:.18em}.button{display:block;width:100%;margin:10px 0;padding:14px 18px;border:0;border-radius:16px;background:linear-gradient(100deg,var(--violet),#a855f7);color:white;font:inherit;font-weight:800;text-decoration:none}.button.secondary{background:#ffffff12;border:1px solid #ffffff30}.small{font-size:.88rem}footer{margin-top:22px;font-size:.82rem}a{color:#74e9f7}#fallback{display:none}.error{color:#ffb4c2}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="brand">KAVORENZA</div>
+    <h1 id="title">Spieleinladung</h1>
+    <p id="status">Die Einladung wird in der Android-App geöffnet …</p>
+    <div id="code" class="code" hidden></div>
+    <div id="fallback">
+      <a id="open-app" class="button" href="#">In Kavorenza öffnen</a>
+      <p id="hint" class="small">Falls sich die App nicht automatisch öffnet, tippe oben. Ohne installierte App kannst du den Code nach der Installation manuell eingeben.</p>
+      <a id="install" class="button secondary" href="https://play.google.com/store/apps/details?id=de.appsmakerdeluxe.Kavorenza">Kavorenza bei Google Play</a>
+    </div>
+    <p id="error" class="error" hidden></p>
+    <footer><a href="../">Datenschutzhinweise</a></footer>
+  </main>
+  <script>
+    (() => {
+      const messages = {
+        de: {title:"Spieleinladung",status:"Die Einladung wird in der Android-App geöffnet …",open:"In Kavorenza öffnen",hint:"Falls sich die App nicht automatisch öffnet, tippe oben. Ohne installierte App kannst du den Code nach der Installation manuell eingeben.",install:"Kavorenza bei Google Play",error:"Dieser Einladungslink enthält keinen gültigen Raumcode."},
+        en: {title:"Game invitation",status:"Opening this invitation in the Android app …",open:"Open in Kavorenza",hint:"If the app does not open automatically, tap above. If it is not installed, install it and enter the code manually.",install:"Kavorenza on Google Play",error:"This invite link does not contain a valid room code."},
+        es: {title:"Invitación de juego",status:"Abriendo la invitación en la aplicación Android …",open:"Abrir en Kavorenza",hint:"Si la aplicación no se abre automáticamente, toca arriba. Si no está instalada, instálala e introduce el código manualmente.",install:"Kavorenza en Google Play",error:"Este enlace no contiene un código de sala válido."},
+        fr: {title:"Invitation à jouer",status:"Ouverture de l’invitation dans l’application Android …",open:"Ouvrir dans Kavorenza",hint:"Si l’application ne s’ouvre pas automatiquement, appuie ci-dessus. Si elle n’est pas installée, installe-la puis saisis le code.",install:"Kavorenza sur Google Play",error:"Ce lien ne contient pas de code de salle valide."},
+        it: {title:"Invito a giocare",status:"Apertura dell’invito nell’app Android …",open:"Apri in Kavorenza",hint:"Se l’app non si apre automaticamente, tocca sopra. Se non è installata, installala e inserisci il codice manualmente.",install:"Kavorenza su Google Play",error:"Questo link non contiene un codice stanza valido."}
+      };
+      const lang = (navigator.language || "de").slice(0, 2).toLowerCase();
+      const text = messages[lang] || messages.en;
+      document.documentElement.lang = messages[lang] ? lang : "en";
+      for (const [id, key] of [["title","title"],["status","status"],["open-app","open"],["hint","hint"],["install","install"],["error","error"]]) {
+        document.getElementById(id).textContent = text[key];
+      }
+      const params = new URLSearchParams(window.location.search);
+      const code = (params.get("room") || "").trim().toUpperCase();
+      const error = document.getElementById("error");
+      if (!/^[A-Z0-9]{6}$/.test(code)) {
+        document.getElementById("status").hidden = true;
+        error.hidden = false;
+        return;
+      }
+      document.getElementById("code").textContent = code;
+      document.getElementById("code").hidden = false;
+      document.getElementById("fallback").style.display = "block";
+      const appUrl = `kavorenza://join?room=${encodeURIComponent(code)}`;
+      document.getElementById("open-app").href = appUrl;
+      window.setTimeout(() => { window.location.href = appUrl; }, 250);
+    })();
+  </script>
+</body>
+</html>
