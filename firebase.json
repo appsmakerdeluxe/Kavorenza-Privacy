@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "public": "docs",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "test-player.html",
+      "audio/**",
+      "music-credits.md"
+    ]
+  }
+}
